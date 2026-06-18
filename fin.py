@@ -27,7 +27,7 @@ import os
 
 if __name__ == "__main__":
 
-    NEWS_PATH = os.path.join(os.getcwd(), "news_", "news_paper2.csv")
+    NEWS_PATH = os.path.join(os.getcwd(), "data" , "news_", "news_paper2.csv")
 
     df_news = pd.read_csv(NEWS_PATH)
 
@@ -42,7 +42,7 @@ if __name__ == "__main__":
             {label_map[idx]: prob.item() for idx, prob in enumerate(row_probs)}
             for row_probs in result["probs"]
         ]
-        
+
         print("Date:     ", date[_])
         print("Probs:    ", probs_dict)
         print("Embedding:", result["embedding"].shape)
