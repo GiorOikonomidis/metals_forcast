@@ -4,6 +4,7 @@ import pandas as pd
 import yfinance as yf
 from numpy.typing import NDArray
 
+from config import *
 
 # function indepenedt per features , anotate numpy arrays m ksekathara val decl , docstring inp/out
 # xvris lagg kai ara den xrhsimopoioume Open  gia ekeinh thn mera 
@@ -23,7 +24,8 @@ def generate_movement(close_price: NDArray[np.float64], open_price: NDArray[np.f
     """
     close_shift: NDArray[np.float64] = np.roll(close_price, 1)
     movement_magnitude: NDArray[np.float64] = (open_price - close_shift) / close_shift
-    movement_direction: NDArray[np.int64] = np.sign(movement_magnitude).astype(np.int64)
+    movement_magnitude[0] = np.nan
+    movement_direction: NDArray[np.int64] = np.sign(np.nan_to_num(movement_magnitude, nan=0)).astype(np.int64)
     return movement_direction
 
 
@@ -87,9 +89,6 @@ def generate_ema(close_price: NDArray[np.float64], span: int) -> NDArray[np.floa
     return ema
 
 
-
-
-
 def generate_rsi(close_price: NDArray[np.float64], window: int = 14) -> NDArray[np.float64]:
     """
     RSI_t = 100 - 100 / (1 + RS_t)
@@ -114,7 +113,9 @@ def generate_rsi(close_price: NDArray[np.float64], window: int = 14) -> NDArray[
     delta = s.diff()
     gain: NDArray[np.float64] = delta.clip(lower=0).rolling(window).mean().to_numpy()
     loss: NDArray[np.float64] = (-delta.clip(upper=0)).rolling(window).mean().to_numpy()
-    rs: NDArray[np.float64]   = np.where(loss == 0, np.inf, gain / loss)
+    rs: NDArray[np.float64]   = np.full_like(gain, np.inf)
+    mask = loss != 0
+    rs[mask] = gain[mask] / loss[mask]
     rsi: NDArray[np.float64]  = 100 - (100 / (1 + rs))
     return rsi
 
@@ -148,7 +149,8 @@ def generate_stochastic(close_price: NDArray[np.float64], high: NDArray[np.float
     """
     low_min:  NDArray[np.float64] = pd.Series(low).rolling(window).min().to_numpy()
     high_max: NDArray[np.float64] = pd.Series(high).rolling(window).max().to_numpy()
-    stoch_k:  NDArray[np.float64] = 100 * (close_price - low_min) / (high_max - low_min)
+    denom: NDArray[np.float64] = high_max - low_min
+    stoch_k: NDArray[np.float64] = np.where(denom == 0, np.nan, 100 * (close_price - low_min) / np.where(denom == 0, 1, denom))
     stoch_d:  NDArray[np.float64] = pd.Series(stoch_k).rolling(smooth).mean().to_numpy()
     return stoch_k, stoch_d
 
@@ -174,7 +176,8 @@ def generate_williams_r(close_price: NDArray[np.float64], high: NDArray[np.float
     """
     low_min:    NDArray[np.float64] = pd.Series(low).rolling(window).min().to_numpy()
     high_max:   NDArray[np.float64] = pd.Series(high).rolling(window).max().to_numpy()
-    williams_r: NDArray[np.float64] = -100 * (high_max - close_price) / (high_max - low_min)
+    denom: NDArray[np.float64] = high_max - low_min
+    williams_r: NDArray[np.float64] = np.where(denom == 0, np.nan, -100 * (high_max - close_price) / np.where(denom == 0, 1, denom))
     return williams_r
 
 
@@ -197,8 +200,19 @@ def generate_roc(close_price: NDArray[np.float64], periods: int = 10) -> NDArray
 
     return roc
 
+# handle missing values an kai auto nomizw to exei kanei h evgenia
 
 def generate_features(df: pd.DataFrame, volatility_window: int = 5) -> pd.DataFrame:
+    """
+    Computes all technical indicators from raw OHLCV data and appends them as new columns.
+    Drops rows with NaN (introduced by rolling windows) and sets Date as the index.
+
+    Args:
+        df:                raw DataFrame with columns: Date, Open, High, Low, Close, Volume
+        volatility_window: rolling window size in days for volatility calculation
+    Returns:
+        enriched DataFrame indexed by Date with all feature columns added
+    """
     data = df.copy()
     data = data.sort_values(by="Date", ascending=True).reset_index(drop=True)
 
@@ -241,39 +255,88 @@ def generate_features(df: pd.DataFrame, volatility_window: int = 5) -> pd.DataFr
 
     return data
 
+def get_yfinance_ticker(ticker: str, date_start: str, date_end: str, file_path: str):
+    """
+    Downloads OHLCV data for a single ticker from Yahoo Finance and saves it as a CSV.
 
-nasdaq_100_yahoo = [
-    "ADBE","ADP","AMD","ABNB","ALNY","GOOGL","GOOG","AMZN","AEP","AMGN",
-    "ADI","AAPL","AMAT","APP","ARM","ASML","TEAM","ADSK","AXON","BKR",
-    "BKNG","AVGO","CDNS","CHTR","CTAS","CSCO","CCEP","CTSH","CMCSA","CEG",
-    "CPRT","CSGP","COST","CRWD","CSX","DDOG","DXCM","FANG","DASH","EA",
-    "EXC","FAST","FER","FTNT","GEHC","GILD","HON","IDXX","INSM","INTC",
-    "INTU","ISRG","KDP","KLAC","KHC","LRCX","LIN","MAR","MRVL","MELI",
-    "META","MCHP","MU","MSFT","MSTR","MDLZ","MPWR","MNST","NFLX","NVDA",
-    "NXPI","ODFL","ORLY","PCAR","PLTR","PANW","PAYX","PYPL","PDD","PEP",
-    "QCOM","REGN","ROP","ROST","STX","SHOP","SBUX","SNPS","TTWO","TSLA",
-    "TXN","TRI","TMUS","VRSK","VRTX","WMT","WBD","WDC","WDAY","XEL","ZS"
-]
+    Args:
+        ticker:     Yahoo Finance ticker symbol (e.g. "AAPL")
+        date_start: start date string, format "YYYY-MM-DD"
+        date_end:   end date string, format "YYYY-MM-DD" (None = today)
+        file_path:  directory where the CSV will be saved
+    """
+    df = yf.download(ticker, start=date_start, end=date_end, auto_adjust=True, progress=False)
+    df = df[["Open", "High", "Low", "Close", "Volume"]].copy()
+    df.index.name = "Date"
+    df = df.reset_index()
+    path = f"{file_path}/{ticker}.csv"
+    df.to_csv(path, index=False)
+    print(f"Saved {ticker} → {path}")
 
 
-def nasdaq_100(start: str = "2007-01-03", end: str = None):
-    os.makedirs("data/companies", exist_ok=True)
+def get_stocks_of_index(dir: str, index_companies: NDArray[np.str_], date_start: str , date_end: str = None):
+    """
+    Downloads OHLCV data for a list of tickers and saves one CSV per ticker.
 
-    for ticker in nasdaq_100_yahoo:
-        df = yf.download(ticker, start=start, end=end, auto_adjust=True, progress=False)
-        df = df[["Open", "High", "Low", "Close", "Volume"]].copy()
-        df.index.name = "Date"
-        df = df.reset_index()
-        path = f"data/companies/{ticker}.csv"
-        df.to_csv(path, index=False)
-        print(f"Saved {ticker} → {path}")
+    Args:
+        dir:              directory where CSVs will be saved
+        index_companies:  array of ticker symbols to download
+        date_start:       start date string, format "YYYY-MM-DD"
+        date_end:         end date string, format "YYYY-MM-DD" (None = today)
+    """
+    for ticker in index_companies:
+        get_yfinance_ticker(ticker , date_start , date_end , dir)
+        
+
+
+def enrich_yfin_file(orig_file: str , dest_file: str):
+    """
+        INPUTS :
+            orgi_file : the orginal filepath that you want to enrich
+            dest_file : the fileapth that you want to save the enriched file
+    """
+    df = pd.read_csv(orig_file)
+    enriched = generate_features(df)
+    enriched.to_csv(dest_file, index=True)
+
+
+def get_enriched_data(target: str, date_start: str, date_end: str, index_companies: NDArray[np.str_] = None, index: str = None):
+    """
+    Downloads raw data, enriches it with technical indicators, and saves the results.
+    Handles both company CSVs (one per ticker) and a single index CSV.
+
+    Args:
+        target:           directory name — either COMPANIES_DIR or INDEX_DIR
+        date_start:       start date string, format "YYYY-MM-DD"
+        date_end:         end date string, format "YYYY-MM-DD" (None = today)
+        index_companies:  array of ticker symbols (required when target == COMPANIES_DIR)
+        index:            index ticker symbol (required when target == INDEX_DIR)
+    """
+
+    origi_dir = os.path.join(ORIGINAL_DATASETS_DIR,target)
+    os.makedirs(origi_dir , exist_ok=True)
+
+    if target == COMPANIES_DIR : get_stocks_of_index(origi_dir, index_companies, date_start, date_end)
+    elif target == INDEX_DIR : 
+        get_yfinance_ticker(index, date_start, date_end ,origi_dir)
+
+    enrch_path = os.path.join(ENRICHED_DATASETS_DIR,target)
+    os.makedirs(enrch_path , exist_ok=True)
+
+    for file in os.listdir(origi_dir): 
+        print(file)
+        enrich_yfin_file(os.path.join(origi_dir, file),os.path.join(enrch_path, file))
+
+        
+
+
+
 
 
 if __name__ == "__main__":
-    #nasdaq_100()
-    
-    df = pd.read_csv("data/NDX/ndx_full_history.csv", skiprows=[1])
-    data = generate_features(df)
-    print(data.columns.tolist())
-    print(data.head())
+    date_start = "2007-01-03"
+    date_end = None
+    index = "NDX"
+    get_enriched_data(target=COMPANIES_DIR, date_start=date_start, date_end=date_end, index_companies=nasdaq_100_yahoo)
+    get_enriched_data(target=INDEX_DIR, date_start=date_start, date_end=date_end, index=index)
     
