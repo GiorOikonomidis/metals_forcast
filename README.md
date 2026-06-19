@@ -1,7 +1,126 @@
-# Price Feature Generation — Math Reference
+# Price Feature Generation
 
-Generates technical indicators from raw OHLCV price data for Nasdaq-100 companies.
+## What it does
+
+`price_feat_gen.py` is a data pipeline that:
+1. **Downloads** raw OHLCV price data from Yahoo Finance for each Nasdaq-100 company and the index itself
+2. **Enriches** each file by computing a set of technical indicators
+3. **Saves** the enriched files to a separate directory, preserving the original raw data
+
+Raw files land in `data/`, enriched files in `data_enriched/` — same folder structure, same filenames.
+
+```
+data/
+  companies/   AAPL.csv, MSFT.csv, ...   ← raw OHLCV
+  index/       ^NDX.csv                  ← raw index
+
+data_enriched/
+  companies/   AAPL.csv, MSFT.csv, ...   ← + technical indicators
+  index/       ^NDX.csv                  ← + technical indicators
+```
+
+All paths and directory names are configured in `config.py`.
+
+---
+
+## Configuration (`config.py`)
+
+| Variable | Default | Description |
+|---|---|---|
+| `ORIGINAL_DATASETS_DIR` | `"data"` | Root directory for raw downloaded CSVs |
+| `ENRICHED_DATASETS_DIR` | `"data_enriched"` | Root directory for enriched CSVs |
+| `COMPANIES_DIR` | `"companies"` | Subdirectory name for company ticker files |
+| `INDEX_DIR` | `"index"` | Subdirectory name for index files |
+| `NEWS_DIR` | `"news"` | Subdirectory name for news files |
+| `nasdaq_100_yahoo` | 101 tickers | List of Nasdaq-100 Yahoo Finance ticker symbols used by `get_enriched_data` |
+
+To change where data is stored, edit `ORIGINAL_DATASETS_DIR` and `ENRICHED_DATASETS_DIR`.  
+To use a different set of tickers, replace or extend `nasdaq_100_yahoo`.
+
+---
+
+## Running the full pipeline
+
+```bash
+python price_feat_gen.py
+```
+
+This downloads and enriches all Nasdaq-100 companies + the `^NDX` index from `2007-01-03` to today.  
+To change the date range or index, edit the `__main__` block at the bottom of the file.
+
+---
+
+## Using individual functions
+
+**Download + enrich everything for a custom list of tickers:**
+```python
+from price_feat_gen import get_enriched_data
+
+get_enriched_data(
+    target="companies",
+    date_start="2015-01-01",
+    date_end="2023-12-31",
+    index_companies=["AAPL", "MSFT", "NVDA"]
+)
+```
+
+**Download + enrich the index only:**
+```python
+get_enriched_data(
+    target="index",
+    date_start="2015-01-01",
+    date_end=None,
+    index="^NDX"
+)
+```
+
+**Enrich an existing raw CSV:**
+```python
+from price_feat_gen import enrich_yfin_file
+
+enrich_yfin_file("data/companies/AAPL.csv", "data_enriched/companies/AAPL.csv")
+```
+
+**Generate features from a DataFrame directly:**
+```python
+from price_feat_gen import generate_features
+import pandas as pd
+
+df = pd.read_csv("data/companies/AAPL.csv")
+enriched = generate_features(df)  # DataFrame indexed by Date
+```
+
+**Download a single ticker:**
+```python
+from price_feat_gen import get_yfinance_ticker
+
+get_yfinance_ticker("TSLA", "2020-01-01", None, "data/companies")
+```
+
+---
+
+## Output columns
+
+Each enriched CSV contains the original OHLCV columns plus:
+
+| Column | Description |
+|---|---|
+| `Movement` | Target label: -1 (down) / 0 (flat) / 1 (up) |
+| `Daily_Return` | % price change from previous close |
+| `Volatility` | Rolling 5-day std of daily returns |
+| `EMA_12`, `EMA_26` | Exponential moving averages (short/long term) |
+| `MACD` | EMA_12 − EMA_26 (trend crossover signal) |
+| `RSI` | Relative Strength Index 0–100 |
+| `Stoch_K`, `Stoch_D` | Stochastic oscillator %K and smoothed %D |
+| `Williams_R` | Williams %R, range -100 to 0 |
+| `ROC` | % price change over 10 days |
+
+---
+
+# Math Reference
+
 Each feature at time `t` refers to data available at `t` (no manual lag applied).
+
 ---
 
 ## Target
