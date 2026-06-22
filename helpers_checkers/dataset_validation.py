@@ -7,8 +7,11 @@ Run from imple_ours/:  venv/Scripts/python dataset_validation.py
 """
 import os
 import sys
+from pathlib import Path
 import numpy as np
 import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 CASES = ["case_1_agg_news", "case_2_mask", "case_3_discard"]
 INDEX_FEATURES = [
@@ -16,6 +19,7 @@ INDEX_FEATURES = [
     "Williams_R", "ROC", "Daily_Return", "Volatility", "Movement",
 ]
 SENT_COLS = ["prob_positive", "prob_negative", "prob_neutral"]
+
 EMBED_DIM = 768
 
 PASS = "\033[32mPASS\033[0m"

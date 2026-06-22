@@ -2,3 +2,4 @@ data*/*/*
 *.ipynb
 venv/*
 venv/**
+!datasets/report/**

@@ -4,13 +4,18 @@ Reads the three parquet cases and produces figures + a printed summary.
 Output: datasets/report/*.png
 """
 import os
+import sys
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.dates as mdates
 
-OUT_DIR   = os.path.join("..","datasets", "report")
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+PARENT  = Path(__file__).resolve().parent.parent
+OUT_DIR = str(PARENT / "datasets" / "report")
 CASES     = ["case_1_agg_news", "case_2_mask", "case_3_discard"]
 CASE_LABELS = ["Case 1\nAgg news", "Case 2\nMask", "Case 3\nDiscard"]
 INDEX_FEATURES = [
@@ -23,7 +28,7 @@ os.makedirs(OUT_DIR, exist_ok=True)
 # ── load ──────────────────────────────────────────────────────────────────────
 
 def load_case(case: str) -> dict:
-    base = os.path.join("datasets", case)
+    base = str(PARENT / "datasets" / case)
     return {
         "target":   pd.read_parquet(os.path.join(base, "target.parquet")),
         "feat":     pd.read_parquet(os.path.join(base, "feature_covariates.parquet")),

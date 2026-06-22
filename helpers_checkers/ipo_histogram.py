@@ -1,9 +1,14 @@
 import os
+import sys
+from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 from collections import Counter
 
-data_dir = os.path.join("..","data_enriched", "companies")
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+PARENT   = Path(__file__).resolve().parent.parent
+data_dir = str(PARENT / "data_enriched" / "companies")
 
 ticker_year = {}
 for f in os.listdir(data_dir):
