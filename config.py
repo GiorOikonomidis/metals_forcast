@@ -17,3 +17,10 @@ nasdaq_100_yahoo = [
     "QCOM","REGN","ROP","ROST","STX","SHOP","SBUX","SNPS","TTWO","TSLA",
     "TXN","TRI","TMUS","VRSK","VRTX","WMT","WBD","WDC","WDAY","XEL","ZS"
 ]
+
+DATASETS_DIR   = "datasets"
+DATE_FEAT_COLS = ["sin_dow", "cos_dow", "sin_month", "cos_month", "sin_doy", "cos_doy"]
+INDEX_FEATURES = [
+    "EMA_12", "EMA_26", "MACD", "RSI", "Stoch_K", "Stoch_D",
+    "Williams_R", "ROC", "Daily_Return", "Volatility", "Movement",
+]

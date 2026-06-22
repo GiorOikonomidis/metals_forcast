@@ -10,24 +10,56 @@ from config import *
 # xvris lagg kai ara den xrhsimopoioume Open  gia ekeinh thn mera 
 # prosthkh date fatures san sinocoidal encoding
 
+
+def generate_date_feat(dates: pd.Series) -> pd.DataFrame:
+    """
+    Encodes cyclic date features as sin/cos pairs on the unit circle.
+
+    For each cyclic period P and raw value v:
+        sin_feat = sin(2π · v / P)
+        cos_feat = cos(2π · v / P)
+
+    Features:
+        day of week  (P=7):   0=Mon ... 6=Sun
+        month        (P=12):  1=Jan ... 12=Dec
+        day of year  (P=365): 1 ... 365
+
+    Args:
+        dates: Series of dates (datetime-compatible), shape (N,)
+    Returns:
+        DataFrame with columns sin_dow, cos_dow, sin_month, cos_month,
+        sin_doy, cos_doy, shape (N, 6)
+    """
+    dt = pd.to_datetime(dates)
+
+    result = pd.DataFrame(index=dates.index)
+    result["sin_dow"]   = np.sin(2 * np.pi * dt.dt.dayofweek / 7)
+    result["cos_dow"]   = np.cos(2 * np.pi * dt.dt.dayofweek / 7)
+    result["sin_month"] = np.sin(2 * np.pi * dt.dt.month / 12)
+    result["cos_month"] = np.cos(2 * np.pi * dt.dt.month / 12)
+    result["sin_doy"]   = np.sin(2 * np.pi * dt.dt.dayofyear / 365)
+    result["cos_doy"]   = np.cos(2 * np.pi * dt.dt.dayofyear / 365)
+
+    return result
+
+
 # affou eipame oti ta feature gia ena entry kanoun refer gia auto to timestamp xwris lags  kai den xrhsimopoiountai sto pred
-# tote movement(t) =  [ Open(t) - Close(t-1) ]  / Close(t-1)
-def generate_movement(close_price: NDArray[np.float64], open_price: NDArray[np.float64]) -> NDArray[np.int64]:
+# tote movement(t) =  [ Open(t) - Close(t-1) ]  / Close(t-1) 
+# na to doume os timh oxi 1 , -1 , 0
+def generate_movement(close_price: NDArray[np.float64], open_price: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     movement(t) =  [ Open(t) - Close(t-1) ]  / Close(t-1)
 
     Args:
-        close_price:      array of daily Close prices, shape (N,)
-        open_price:  array of daily Open prices , shape (N,)
+        close_price:  array of daily Close prices, shape (N,)
+        open_price:   array of daily Open prices, shape (N,)
     Returns:
-        movement_direction:   -1 , 0 , 1 array, shape (N,)
+        movement: percentage change array, shape (N,)  — NaN at index 0
     """
-    close_shift: NDArray[np.float64] = np.roll(close_price, 1)
-    movement_magnitude: NDArray[np.float64] = (open_price - close_shift) / close_shift
-    movement_magnitude[0] = np.nan
-    movement_direction: NDArray[np.int64] = np.sign(np.nan_to_num(movement_magnitude, nan=0)).astype(np.int64)
-    return movement_direction
-
+    close_shift: NDArray[np.float64] = np.roll(close_price, 1).astype(np.float64)
+    movement: NDArray[np.float64] = (open_price - close_shift) / close_shift
+    movement[0] = np.nan
+    return movement
 
 def generate_daily_return(close_price: NDArray[np.float64]) -> NDArray[np.float64]:
     """
@@ -234,6 +266,9 @@ def generate_features(df: pd.DataFrame, volatility_window: int = 5) -> pd.DataFr
     ema_26           = generate_ema(close_price, span=26)
     stoch_k, stoch_d = generate_stochastic(close_price, high, low)
 
+    date_feats = generate_date_feat(data["Date"])
+    data = pd.concat([data, date_feats], axis=1)
+
     data["Movement"]      = generate_movement(close_price, open_price)
     data["Daily_Return"]  = daily_return
     data["Volatility"]    = volatility
@@ -266,7 +301,11 @@ def get_yfinance_ticker(ticker: str, date_start: str, date_end: str, file_path: 
         file_path:  directory where the CSV will be saved
     """
     df = yf.download(ticker, start=date_start, end=date_end, auto_adjust=True, progress=False)
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
     df = df[["Open", "High", "Low", "Close", "Volume"]].copy()
+
+    df = df.ffill().bfill()
     df.index.name = "Date"
     df = df.reset_index()
     path = f"{file_path}/{ticker}.csv"
@@ -287,7 +326,6 @@ def get_stocks_of_index(dir: str, index_companies: NDArray[np.str_], date_start:
     for ticker in index_companies:
         get_yfinance_ticker(ticker , date_start , date_end , dir)
         
-
 
 def enrich_yfin_file(orig_file: str , dest_file: str):
     """
@@ -336,7 +374,7 @@ def get_enriched_data(target: str, date_start: str, date_end: str, index_compani
 if __name__ == "__main__":
     date_start = "2007-01-03"
     date_end = None
-    index = "NDX"
+    index = "^NDX"
     get_enriched_data(target=COMPANIES_DIR, date_start=date_start, date_end=date_end, index_companies=nasdaq_100_yahoo)
     get_enriched_data(target=INDEX_DIR, date_start=date_start, date_end=date_end, index=index)
     
