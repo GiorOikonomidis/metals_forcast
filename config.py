@@ -21,6 +21,7 @@ nasdaq_100_yahoo = [
 DATASETS_DIR   = "datasets"
 DATE_FEAT_COLS = ["sin_dow", "cos_dow", "sin_month", "cos_month", "sin_doy", "cos_doy"]
 INDEX_FEATURES = [
+    "Open","High","Low","Volume",
     "EMA_12", "EMA_26", "MACD", "RSI", "Stoch_K", "Stoch_D",
     "Williams_R", "ROC", "Daily_Return", "Volatility", "Movement",
 ]

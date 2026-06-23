@@ -13,7 +13,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-CASES = ["case_1_agg_news", "case_2_mask", "case_3_discard"]
+CASES = ["case_mask", "case_interp"]
 INDEX_FEATURES = [
     "EMA_12", "EMA_26", "MACD", "RSI", "Stoch_K", "Stoch_D",
     "Williams_R", "ROC", "Daily_Return", "Volatility", "Movement",
@@ -288,65 +288,50 @@ for case in CASES:
 
 header("CROSS-CASE CONSISTENCY")
 
-# Cases 1 & 3 should have exactly the same dates (both trading-days only)
-dates1 = pd.DatetimeIndex(data["case_1_agg_news"]["tgt"]["date"])
-dates3 = pd.DatetimeIndex(data["case_3_discard"]["tgt"]["date"])
-check(dates1.equals(dates3), "FAIL", "cross",
-      "Case 1 and Case 3 have identical date ranges (both trading-days only)",
-      f"Case1={len(dates1)} vs Case3={len(dates3)}")
+# Both cases share the same date range (built from identical all_dates logic)
+dates_mask  = pd.DatetimeIndex(data["case_mask"]["tgt"]["date"])
+dates_interp = pd.DatetimeIndex(data["case_interp"]["tgt"]["date"])
+check(dates_mask.equals(dates_interp), "FAIL", "cross",
+      "case_mask and case_interp have identical date ranges",
+      f"mask={len(dates_mask)} vs interp={len(dates_interp)}")
 
-# Case 2 trading-day rows should be a superset of Cases 1 & 3 dates
-feat2 = data["case_2_mask"]["feat"]
-dates2_all = pd.DatetimeIndex(data["case_2_mask"]["tgt"]["date"])
-if "trading_day" in feat2.columns:
-    trading_mask2 = feat2["trading_day"].values == 1
-    dates2_trading = dates2_all[trading_mask2]
-else:
-    dates2_trading = pd.DatetimeIndex([])
-extra_in_1 = dates1.difference(dates2_trading)
-check(len(extra_in_1) == 0, "FAIL", "cross",
-      "All Case 1 trading dates appear as trading rows in Case 2",
-      f"{len(extra_in_1)} dates in Case 1 not found as trading in Case 2: {extra_in_1[:5].tolist()}" if len(extra_in_1) else "")
+# Target Close values should be identical (same index, same unfilled source)
+tgt_mask  = data["case_mask"]["tgt"].set_index("date")
+tgt_interp = data["case_interp"]["tgt"].set_index("date")
+common = tgt_mask.index.intersection(tgt_interp.index)
+if len(common):
+    diff = (tgt_mask.loc[common, "Close"] - tgt_interp.loc[common, "Close"]).abs().max()
+    check(diff < 1e-6, "FAIL", "cross",
+          "target Close identical in both cases on all shared dates",
+          f"max diff={diff:.2e}" if diff >= 1e-6 else "")
 
-# Target Close values should be identical on matching dates
-tgt1 = data["case_1_agg_news"]["tgt"].set_index("date")
-tgt2 = data["case_2_mask"]["tgt"].set_index("date")
-tgt3 = data["case_3_discard"]["tgt"].set_index("date")
+# Company feature columns should be identical across both cases
+dyn_mask  = data["case_mask"]["dyn"]
+dyn_interp = data["case_interp"]["dyn"]
+company_cols_mask  = sorted([c for c in dyn_mask.columns  if "__" in c])
+company_cols_interp = sorted([c for c in dyn_interp.columns if "__" in c])
+check(company_cols_mask == company_cols_interp, "FAIL", "cross",
+      "Same company columns in both cases",
+      f"diff: {set(company_cols_mask).symmetric_difference(company_cols_interp)}"
+      if company_cols_mask != company_cols_interp else "")
 
-common_13 = tgt1.index.intersection(tgt3.index)
-if len(common_13):
-    diff_13 = (tgt1.loc[common_13, "Close"] - tgt3.loc[common_13, "Close"]).abs().max()
-    check(diff_13 < 1e-6, "FAIL", "cross",
-          "target Close identical in Case 1 & Case 3 on trading days",
-          f"max diff={diff_13:.2e}" if diff_13 >= 1e-6 else "")
+# case_mask should have trading_day column; case_interp should not
+feat_mask  = data["case_mask"]["feat"]
+feat_interp = data["case_interp"]["feat"]
+check("trading_day" in feat_mask.columns,  "FAIL", "cross", "case_mask has trading_day column")
+check("trading_day" not in feat_interp.columns, "FAIL", "cross", "case_interp has no trading_day column")
 
-common_12 = tgt1.index.intersection(tgt2.index)
-if len(common_12):
-    diff_12 = (tgt1.loc[common_12, "Close"] - tgt2.loc[common_12, "Close"]).abs().max()
-    check(diff_12 < 1e-6, "FAIL", "cross",
-          "target Close identical in Case 1 & Case 2 on shared dates",
-          f"max diff={diff_12:.2e}" if diff_12 >= 1e-6 else "")
-
-# Company close columns should be identical across cases on trading days
-dyn1 = data["case_1_agg_news"]["dyn"]
-dyn2 = data["case_2_mask"]["dyn"]
-dyn3 = data["case_3_discard"]["dyn"]
-company_cols_1 = sorted([c for c in dyn1.columns if "__" in c])
-company_cols_2 = sorted([c for c in dyn2.columns if "__" in c])
-company_cols_3 = sorted([c for c in dyn3.columns if "__" in c])
-check(company_cols_1 == company_cols_3, "FAIL", "cross",
-      "Same company columns in Cases 1 & 3",
-      f"diff: {set(company_cols_1).symmetric_difference(company_cols_3)}" if company_cols_1 != company_cols_3 else "")
-check(company_cols_1 == company_cols_2, "FAIL", "cross",
-      "Same company columns in Cases 1 & 2",
-      f"diff: {set(company_cols_1).symmetric_difference(company_cols_2)}" if company_cols_1 != company_cols_2 else "")
-
-# Case 3 should have more news NaN than Case 1 (discards weekend news)
-news_nan_1 = dyn1["prob_positive"].isna().sum()
-news_nan_3 = dyn3["prob_positive"].isna().sum()
-check(news_nan_3 >= news_nan_1, "WARN", "cross",
-      "Case 3 has >= news NaN than Case 1 (discard vs aggregate)",
-      f"Case1={news_nan_1}, Case3={news_nan_3}")
+# On trading days, case_interp company closes should equal case_mask closes
+# (interpolation only affects non-trading rows; trading rows have real prices)
+if company_cols_mask == company_cols_interp and len(company_cols_mask):
+    trading_rows = feat_mask["trading_day"].values == 1
+    sample_col   = company_cols_mask[0]
+    diff_td = (dyn_mask.loc[trading_rows, sample_col].values
+               - dyn_interp.loc[trading_rows, sample_col].values)
+    max_diff = np.abs(diff_td).max()
+    check(max_diff < 1e-6, "FAIL", "cross",
+          f"company closes identical on trading days (checked {sample_col})",
+          f"max diff={max_diff:.2e}" if max_diff >= 1e-6 else "")
 
 
 # ══════════════════════════════════════════════════════════════════════════════

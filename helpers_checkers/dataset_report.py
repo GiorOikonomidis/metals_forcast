@@ -16,8 +16,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 PARENT  = Path(__file__).resolve().parent.parent
 OUT_DIR = str(PARENT / "datasets" / "report")
-CASES     = ["case_1_agg_news", "case_2_mask", "case_3_discard"]
-CASE_LABELS = ["Case 1\nAgg news", "Case 2\nMask", "Case 3\nDiscard"]
+CASES     = ["case_mask", "case_interp"]
+CASE_LABELS = ["Case mask\nffill", "Case interp\nLinear"]
 INDEX_FEATURES = [
     "EMA_12", "EMA_26", "MACD", "RSI", "Stoch_K", "Stoch_D",
     "Williams_R", "ROC", "Daily_Return", "Volatility", "Movement",
@@ -47,20 +47,22 @@ print("=" * 70)
 for case, d in data.items():
     tgt, feat, dyn = d["target"], d["feat"], d["dyn"]
     dates = pd.to_datetime(tgt["date"])
-    news_nan = dyn["prob_positive"].isna().sum()
-    company_cols = [c for c in dyn.columns if "__" in c]
-    close_cols   = [c for c in company_cols if c.endswith("__Close")]
-    price_nan    = dyn[close_cols].isna().sum().sum()
+    news_nan      = dyn["prob_positive"].isna().sum()
+    company_cols  = [c for c in dyn.columns if "__" in c]
+    close_cols    = [c for c in company_cols if c.endswith("__Close")]
+    company_close_nan = dyn[close_cols].isna().sum().sum()
+    tgt_close_nan = tgt["Close"].isna().sum()
     print(f"\n{case}")
-    print(f"  Rows          : {len(tgt)}")
-    print(f"  Date range    : {dates.iloc[0].date()} to {dates.iloc[-1].date()}")
-    print(f"  Feat cols     : {list(feat.columns)}")
-    print(f"  Dyn cols      : {len(dyn.columns)}  ({len(close_cols)} companies, {len(company_cols)} company feature cols total)")
-    print(f"  News NaN rows : {news_nan}  ({100*news_nan/len(dyn):.1f}%)")
-    print(f"  Price NaN cells: {price_nan}")
+    print(f"  Rows                    : {len(tgt)}")
+    print(f"  Date range              : {dates.iloc[0].date()} to {dates.iloc[-1].date()}")
+    print(f"  Feat cols               : {list(feat.columns)}")
+    print(f"  Dyn cols                : {len(dyn.columns)}  ({len(close_cols)} companies, {len(company_cols)} company feature cols total)")
+    print(f"  Target Close NaN        : {tgt_close_nan}  ({100*tgt_close_nan/len(tgt):.1f}%)")
+    print(f"  Company Close NaN (all) : {company_close_nan}")
+    print(f"  News NaN rows           : {news_nan}  ({100*news_nan/len(dyn):.1f}%)")
     if "trading_day" in feat.columns:
         td = feat["trading_day"]
-        print(f"  Trading days  : {int(td.sum())}  |  Non-trading: {int((td==0).sum())}")
+        print(f"  Trading days            : {int(td.sum())}  |  Non-trading: {int((td==0).sum())}")
 print("\n" + "=" * 70)
 
 
@@ -76,7 +78,7 @@ def savefig(name: str):
 # ── fig 1: NDX close price ────────────────────────────────────────────────────
 
 print("\nFig 1: NDX Close price...")
-tgt = data["case_1_agg_news"]["target"]
+tgt = data["case_mask"]["target"]
 dates = pd.to_datetime(tgt["date"])
 close = tgt["Close"]
 
@@ -125,7 +127,7 @@ savefig("fig2_case_overview.png")
 print("Fig 3: News coverage timeline...")
 
 # derive news publication dates from Case 2 parquet (news kept on original dates)
-_dyn2     = data["case_2_mask"]["dyn"]
+_dyn2     = data["case_mask"]["dyn"]
 _dyn2_dates = pd.to_datetime(_dyn2["date"] if "date" in _dyn2.columns else _dyn2.index)
 _news_idx = _dyn2_dates[_dyn2["prob_positive"].notna().values].sort_values()
 
@@ -148,36 +150,33 @@ for ax, case, label in zip(axes, CASES, CASE_LABELS):
     dyn   = data[case]["dyn"]
     dates = pd.to_datetime(data[case]["target"]["date"])
 
-    if case == "case_1_agg_news":
-        counts = _news_counts_case1(dates)
-        ymax   = 5
-    else:
-        counts = pd.Series(dyn["prob_positive"].notna().astype(int).values, index=dates)
-        ymax   = 2
+    counts = pd.Series(dyn["prob_positive"].notna().astype(int).values, index=dates)
+    ymax   = 2
 
     # bar plot of counts
     colors = ["#d62728" if v == 0 else "#2ca02c" for v in counts.values]
     ax.bar(counts.index, counts.values, width=2, color=colors, alpha=0.7)
 
-    # find isolated 0s (not part of the 2026 block) and annotate with date
+    # find isolated 0s and annotate
     zero_dates = counts[counts == 0].index
-    last_news  = counts[counts > 0].index.max()   # last date with news
-    end_gap_start = counts[(counts == 0) & (counts.index > last_news)].index.min()
+    if len(zero_dates) > 0:
+        last_news     = counts[counts > 0].index.max()
+        trailing_gaps = counts[(counts == 0) & (counts.index > last_news)]
+        end_gap_start = trailing_gaps.index.min() if len(trailing_gaps) else None
 
-    # annotate isolated 0s (before the end gap)
-    for d in zero_dates:
-        if d <= last_news:
-            ax.annotate(str(d.date()), xy=(d, 0), xytext=(d, ymax * 0.4),
-                        fontsize=7, color="#d62728", ha="center",
-                        arrowprops=dict(arrowstyle="-", color="#d62728", lw=0.8))
+        for d in zero_dates:
+            if end_gap_start is None or d < end_gap_start:
+                ax.annotate(str(d.date()), xy=(d, 0), xytext=(d, ymax * 0.4),
+                            fontsize=7, color="#d62728", ha="center",
+                            arrowprops=dict(arrowstyle="-", color="#d62728", lw=0.8))
 
-    # shade and annotate the end gap only
-    ax.axvspan(end_gap_start, dates.max(), color="#d62728", alpha=0.12)
-    ax.axvline(end_gap_start, color="#d62728", linestyle="--", linewidth=1.2)
-    ax.annotate(f"News ends\n{last_news.date()}", xy=(end_gap_start, ymax * 0.7),
-                xytext=(end_gap_start - pd.Timedelta(days=500), ymax * 0.75),
-                fontsize=7.5, color="#d62728",
-                arrowprops=dict(arrowstyle="->", color="#d62728", lw=0.8))
+        if end_gap_start is not None:
+            ax.axvspan(end_gap_start, dates.max(), color="#d62728", alpha=0.12)
+            ax.axvline(end_gap_start, color="#d62728", linestyle="--", linewidth=1.2)
+            ax.annotate(f"News ends\n{last_news.date()}", xy=(end_gap_start, ymax * 0.7),
+                        xytext=(end_gap_start - pd.Timedelta(days=500), ymax * 0.75),
+                        fontsize=7.5, color="#d62728",
+                        arrowprops=dict(arrowstyle="->", color="#d62728", lw=0.8))
 
     ax.set_ylim(-0.1, ymax)
     ax.set_yticks(range(ymax))
@@ -199,20 +198,17 @@ fig.tight_layout()
 savefig("fig3_news_coverage.png")
 
 # keep dyn1 / dates1 available for later figures
-dyn1   = data["case_1_agg_news"]["dyn"]
-dates1 = pd.to_datetime(data["case_1_agg_news"]["target"]["date"])
+dyn1   = data["case_mask"]["dyn"]
+dates1 = pd.to_datetime(data["case_mask"]["target"]["date"])
 
 
 # ── fig 4: sentiment distribution — one PNG per case ─────────────────────────
 
 def _plot_sentiment(case, dyn, dates, fname):
-    is_case1   = case == "case_1_agg_news"
     dyn_news   = dyn[dyn["prob_positive"].notna()]
     news_dates = dates[dyn["prob_positive"].notna().values].values
-    x_label    = ("Summed probability across window days\n(>1.0 possible: sum over multiple days)"
-                  if is_case1 else "Probability for this day (0.0 to 1.0)")
-    pie_title  = ("Dominant label\n(argmax of summed window probs)"
-                  if is_case1 else "Dominant label per day")
+    x_label    = "Probability for this day (0.0 to 1.0)"
+    pie_title  = "Dominant label per day"
     colors_pie = {"positive": "#2ca02c", "negative": "#d62728", "neutral": "#7f7f7f"}
 
     fig = plt.figure(figsize=(16, 8))
@@ -284,7 +280,7 @@ print("Fig 4b: Sentiment per-t vs rolling, all 3 cases...")
 SENT_COLS   = ["prob_positive", "prob_negative", "prob_neutral"]
 SENT_COLORS = ["#2ca02c", "#d62728", "#7f7f7f"]
 SENT_LABELS = ["Positive", "Negative", "Neutral"]
-CASE_TITLES = ["Case 1 — Agg news\n(probs summed over window)", "Case 2 — Mask\n(probs on original date)", "Case 3 — Discard\n(probs on trading day only)"]
+CASE_TITLES = ["Case mask\n(ffill, trading_day flag)", "Case interp\n(linear interpolation)"]
 
 fig, axes = plt.subplots(2, 3, figsize=(18, 8), sharex="col")
 
@@ -377,8 +373,8 @@ savefig("fig6_tech_timeseries.png")
 # ── fig 8: case 2 trading mask ────────────────────────────────────────────────
 
 print("Fig 8: Case 2 trading mask...")
-feat2 = data["case_2_mask"]["feat"]
-tgt2  = data["case_2_mask"]["target"]
+feat2 = data["case_mask"]["feat"]
+tgt2  = data["case_mask"]["target"]
 dates2 = pd.to_datetime(tgt2["date"])
 td = pd.Series(feat2["trading_day"].values, index=dates2)
 
@@ -406,7 +402,7 @@ savefig("fig8_case2_mask.png")
 # ── fig 9: target return distribution ────────────────────────────────────────
 
 print("Fig 9: Return distribution...")
-close_series = pd.Series(tgt["Close"].values, index=dates)
+close_series = pd.Series(tgt["Close"].values, index=dates).dropna()
 returns = close_series.pct_change().dropna() * 100
 
 fig, axes = plt.subplots(1, 2, figsize=(12, 4))
@@ -436,8 +432,8 @@ savefig("fig9_return_distribution.png")
 # ── fig 10: company close prices (normalised) ─────────────────────────────────
 
 print("Fig 10: Company close prices...")
-dyn1   = data["case_1_agg_news"]["dyn"]
-tgt1   = data["case_1_agg_news"]["target"]
+dyn1   = data["case_mask"]["dyn"]
+tgt1   = data["case_mask"]["target"]
 dates1 = pd.to_datetime(tgt1["date"])
 
 close_cols = sorted([c for c in dyn1.columns if c.endswith("__Close")])
