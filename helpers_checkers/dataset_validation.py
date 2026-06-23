@@ -78,8 +78,8 @@ for case in CASES:
     is_case2 = (case == "case_2_mask")
 
     dates_tgt  = pd.to_datetime(tgt["date"])
-    dates_feat = pd.to_datetime(feat.index)
-    dates_dyn  = pd.to_datetime(dyn.index)
+    dates_feat = pd.to_datetime(feat["date"])
+    dates_dyn  = pd.to_datetime(dyn["date"])
 
     close_cols = [c for c in dyn.columns if c.startswith("Close_")]
     n = len(tgt)
@@ -95,8 +95,8 @@ for case in CASES:
     # ── 2. Date alignment ─────────────────────────────────────────────────────
     dates_match_feat = np.array_equal(dates_tgt.values, dates_feat.values)
     dates_match_dyn  = np.array_equal(dates_tgt.values, dates_dyn.values)
-    check(dates_match_feat, "FAIL", case, "target.date == feat.index (exact alignment)")
-    check(dates_match_dyn,  "FAIL", case, "target.date == dyn.index  (exact alignment)")
+    check(dates_match_feat, "FAIL", case, "target.date == feat.date (exact alignment)")
+    check(dates_match_dyn,  "FAIL", case, "target.date == dyn.date  (exact alignment)")
 
     # ── 3. Date monotonicity & uniqueness ─────────────────────────────────────
     is_sorted = dates_tgt.is_monotonic_increasing

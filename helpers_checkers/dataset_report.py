@@ -122,13 +122,10 @@ savefig("fig2_case_overview.png")
 
 print("Fig 3: News coverage timeline...")
 
-# load enriched news to count how many news days fall in each window
-_news_raw = pd.read_csv(
-    os.path.join("data_enriched", "news", "news_paper2.csv"),
-    index_col="Date", parse_dates=True,
-)
-_news_raw = _news_raw[~_news_raw.index.duplicated(keep="last")]
-_news_idx  = _news_raw.index.sort_values()
+# derive news publication dates from Case 2 parquet (news kept on original dates)
+_dyn2     = data["case_2_mask"]["dyn"]
+_dyn2_dates = pd.to_datetime(_dyn2["date"] if "date" in _dyn2.columns else _dyn2.index)
+_news_idx = _dyn2_dates[_dyn2["prob_positive"].notna().values].sort_values()
 
 def _count_window(t, next_t):
     lo = _news_idx.searchsorted(t)
