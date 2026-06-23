@@ -81,7 +81,8 @@ for case in CASES:
     dates_feat = pd.to_datetime(feat["date"])
     dates_dyn  = pd.to_datetime(dyn["date"])
 
-    close_cols = [c for c in dyn.columns if c.startswith("Close_")]
+    company_cols = [c for c in dyn.columns if "__" in c]
+    close_cols   = [c for c in company_cols if c.endswith("__Close")]
     n = len(tgt)
 
     header(f"CASE: {case}  ({n} rows)")
@@ -185,23 +186,25 @@ for case in CASES:
         check(std > 1e-8, "WARN", case, f"dyn.{col} not constant",
               f"std={std:.2e}" if std <= 1e-8 else "")
 
-    # ── 7. Company close prices ───────────────────────────────────────────────
-    check(len(close_cols) > 0, "FAIL", case, "company Close columns present",
-          f"found {len(close_cols)}")
+    # ── 7. Company features ───────────────────────────────────────────────────
+    check(len(company_cols) > 0, "FAIL", case, "company feature columns present",
+          f"found {len(company_cols)}")
+    if company_cols:
+        total_nan = dyn[company_cols].isna().sum().sum()
+        check(total_nan == 0, "FAIL", case,
+              "company features no NaN (ffill+bfill should eliminate all)",
+              f"{total_nan} total NaN across {len(company_cols)} columns" if total_nan else "")
+        total_inf = np.isinf(dyn[company_cols].values.astype(float)).sum()
+        check(total_inf == 0, "FAIL", case, "company features no inf",
+              f"{total_inf} inf values" if total_inf else "")
+
     if close_cols:
-        total_close_nan = dyn[close_cols].isna().sum().sum()
-        check(total_close_nan == 0, "FAIL", case,
-              f"company closes no NaN (ffill+bfill should eliminate all)",
-              f"{total_close_nan} total NaN across {len(close_cols)} companies" if total_close_nan else "")
-        total_close_inf = np.isinf(dyn[close_cols].values.astype(float)).sum()
-        check(total_close_inf == 0, "FAIL", case, "company closes no inf",
-              f"{total_close_inf} inf values" if total_close_inf else "")
         neg_prices = (dyn[close_cols] <= 0).sum().sum()
-        check(neg_prices == 0, "FAIL", case, "company closes all positive (>0)",
+        check(neg_prices == 0, "FAIL", case, "company __Close columns all positive (>0)",
               f"{neg_prices} zero/negative values" if neg_prices else "")
 
         # per-company NaN report if any
-        if total_close_nan:
+        if dyn[close_cols].isna().sum().sum():
             per_co = dyn[close_cols].isna().sum()
             bad_co = per_co[per_co > 0]
             print(f"  [{WARN}] Companies with NaN closes:")
@@ -328,15 +331,15 @@ if len(common_12):
 dyn1 = data["case_1_agg_news"]["dyn"]
 dyn2 = data["case_2_mask"]["dyn"]
 dyn3 = data["case_3_discard"]["dyn"]
-close_cols_1 = sorted([c for c in dyn1.columns if c.startswith("Close_")])
-close_cols_2 = sorted([c for c in dyn2.columns if c.startswith("Close_")])
-close_cols_3 = sorted([c for c in dyn3.columns if c.startswith("Close_")])
-check(close_cols_1 == close_cols_3, "FAIL", "cross",
+company_cols_1 = sorted([c for c in dyn1.columns if "__" in c])
+company_cols_2 = sorted([c for c in dyn2.columns if "__" in c])
+company_cols_3 = sorted([c for c in dyn3.columns if "__" in c])
+check(company_cols_1 == company_cols_3, "FAIL", "cross",
       "Same company columns in Cases 1 & 3",
-      f"diff: {set(close_cols_1).symmetric_difference(close_cols_3)}" if close_cols_1 != close_cols_3 else "")
-check(close_cols_1 == close_cols_2, "FAIL", "cross",
+      f"diff: {set(company_cols_1).symmetric_difference(company_cols_3)}" if company_cols_1 != company_cols_3 else "")
+check(company_cols_1 == company_cols_2, "FAIL", "cross",
       "Same company columns in Cases 1 & 2",
-      f"diff: {set(close_cols_1).symmetric_difference(close_cols_2)}" if close_cols_1 != close_cols_2 else "")
+      f"diff: {set(company_cols_1).symmetric_difference(company_cols_2)}" if company_cols_1 != company_cols_2 else "")
 
 # Case 3 should have more news NaN than Case 1 (discards weekend news)
 news_nan_1 = dyn1["prob_positive"].isna().sum()

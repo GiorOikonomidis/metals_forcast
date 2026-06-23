@@ -48,12 +48,14 @@ for case, d in data.items():
     tgt, feat, dyn = d["target"], d["feat"], d["dyn"]
     dates = pd.to_datetime(tgt["date"])
     news_nan = dyn["prob_positive"].isna().sum()
-    price_nan = dyn[[c for c in dyn.columns if c.startswith("Close_")]].isna().sum().sum()
+    company_cols = [c for c in dyn.columns if "__" in c]
+    close_cols   = [c for c in company_cols if c.endswith("__Close")]
+    price_nan    = dyn[close_cols].isna().sum().sum()
     print(f"\n{case}")
     print(f"  Rows          : {len(tgt)}")
     print(f"  Date range    : {dates.iloc[0].date()} to {dates.iloc[-1].date()}")
     print(f"  Feat cols     : {list(feat.columns)}")
-    print(f"  Dyn cols      : {len(dyn.columns)}  ({len([c for c in dyn.columns if c.startswith('Close_')])} companies)")
+    print(f"  Dyn cols      : {len(dyn.columns)}  ({len(close_cols)} companies, {len(company_cols)} company feature cols total)")
     print(f"  News NaN rows : {news_nan}  ({100*news_nan/len(dyn):.1f}%)")
     print(f"  Price NaN cells: {price_nan}")
     if "trading_day" in feat.columns:
@@ -438,15 +440,15 @@ dyn1   = data["case_1_agg_news"]["dyn"]
 tgt1   = data["case_1_agg_news"]["target"]
 dates1 = pd.to_datetime(tgt1["date"])
 
-close_cols = sorted([c for c in dyn1.columns if c.startswith("Close_")])
+close_cols = sorted([c for c in dyn1.columns if c.endswith("__Close")])
 closes     = dyn1[close_cols].set_index(dates1)
 
 # Normalise each series to 1 at its first valid value
 first_vals = closes.bfill().iloc[0]
 norm       = closes.div(first_vals)
 
-HIGHLIGHT = ["Close_AAPL", "Close_MSFT", "Close_NVDA", "Close_AMZN",
-             "Close_GOOG", "Close_NFLX", "Close_AMD",  "Close_INTC"]
+HIGHLIGHT = ["AAPL__Close", "MSFT__Close", "NVDA__Close", "AMZN__Close",
+             "GOOG__Close", "NFLX__Close", "AMD__Close",  "INTC__Close"]
 HL_COLORS  = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",
               "#9467bd", "#8c564b", "#e377c2", "#7f7f7f"]
 
@@ -461,7 +463,7 @@ for col in close_cols:
 
 for col, color in zip(HIGHLIGHT, HL_COLORS):
     if col in norm.columns:
-        ticker = col.replace("Close_", "")
+        ticker = col.split("__")[0]
         ax.plot(norm.index, norm[col], linewidth=1.2, alpha=0.85,
                 color=color, label=ticker)
 

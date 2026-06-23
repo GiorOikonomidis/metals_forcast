@@ -122,32 +122,31 @@ def get_trading_dates(index: pd.DataFrame) -> pd.DatetimeIndex:
     return index["Close"].dropna().index.sort_values()
 
 
-def get_all_closes(companies: dict, dates: pd.DatetimeIndex) -> pd.DataFrame:
+def get_all_company_features(companies: dict) -> pd.DataFrame:
     """
     What it does:
-        Builds a wide DataFrame of company Close prices aligned to the
-        requested date index. Each company is reindexed to `dates`; dates
-        where the company has no data will be NaN until the caller applies
-        ffill/bfill. The caller is responsible for filling.
+        Builds a wide DataFrame of all features for every company using each
+        company's original date index. Each (ticker, column) pair becomes one
+        column named "{TICKER}__{FEATURE}" (double-underscore separator).
+        Alignment to the target date sequence is the caller's responsibility
+        via reindex().ffill().bfill().
 
     Input:
         companies : dict[str, pd.DataFrame]
-            As returned by load_companies_2007().
-        dates : pd.DatetimeIndex
-            The target date index for the output (trading days for Cases 1 & 3,
-            all_dates for Case 2).
+            As returned by load_companies_2007(). Each DataFrame has OHLCV +
+            technical indicator columns indexed by Date.
 
     Output:
-        pd.DataFrame  shape (len(dates), n_companies)
-            Index   : dates
-            Columns : "Close_<TICKER>" for each ticker in companies.
-            Values  : raw Close prices, NaN where the company had no quote on
-                      that date. Caller must ffill().bfill() after this call.
+        pd.DataFrame  shape (n_all_dates, n_companies * n_features)
+            Index   : union of all company date indices (original trading days).
+            Columns : "{TICKER}__{FEATURE}" for every ticker and every column
+                      in that ticker's DataFrame (e.g. "AAPL__Close",
+                      "AAPL__EMA_12", "MSFT__Close", ...).
     """
-    return pd.DataFrame(
-        {f"Close_{t}": df["Close"].reindex(dates) for t, df in companies.items()},
-        index=dates,
-    )
+    frames = {f"{ticker}__{col}": df[col]
+              for ticker, df in companies.items()
+              for col in df.columns}
+    return pd.DataFrame(frames)
 
 
 def get_trading_mask(index: pd.DataFrame, dates: pd.DatetimeIndex) -> pd.Series:
@@ -338,12 +337,12 @@ def save_feature_covariates(
 
 
 def save_dynamic_covariates(
-    index_df:   pd.DataFrame,
-    all_closes: pd.DataFrame,
-    news_df:    pd.DataFrame | None,
-    dates:      pd.DatetimeIndex,
-    out_dir:    str,
-    id:         str = "",
+    index_df:    pd.DataFrame,
+    company_df:  pd.DataFrame,
+    news_df:     pd.DataFrame | None,
+    dates:       pd.DatetimeIndex,
+    out_dir:     str,
+    id:          str = "",
 ):
     """
     What it does:
@@ -372,9 +371,11 @@ def save_dynamic_covariates(
             Already sliced to INDEX_FEATURES columns by the caller (Cases 1
             & 3 use index[INDEX_FEATURES]; Case 2 uses index_filled[INDEX_FEATURES]
             where index_filled = index.reindex(all_dates).ffill().bfill()).
-        all_closes : pd.DataFrame
-            Wide company close matrix as returned by get_all_closes(), already
-            ffill+bfilled by the caller. Shape (len(dates), n_companies).
+        company_df : pd.DataFrame
+            Wide company feature matrix as returned by get_all_company_features(),
+            already ffill+bfilled by the caller.
+            Shape (len(dates), n_companies * n_features).
+            Columns named "{TICKER}__{FEATURE}" (e.g. "AAPL__Close", "AAPL__EMA_12").
         news_df    : pd.DataFrame | None
             Case 1 : aggregated news DataFrame from aggregate_news_to_trading_days().
             Case 2 : raw news DataFrame (news stays on original publication date).
@@ -392,27 +393,27 @@ def save_dynamic_covariates(
             id                                         — str constant
             EMA_12, EMA_26, MACD, RSI, Stoch_K, Stoch_D, Williams_R,
             ROC, Daily_Return, Volatility, Movement   — float64
-            Close_AAPL … Close_XEL (74 cols)          — float64, no NaN
+            AAPL__Close, AAPL__EMA_12, … TSLA__Movement
+                (n_companies * n_features cols)        — float64, no NaN
             prob_positive, prob_negative, prob_neutral — float64, NaN where no news
             label                                      — str or NaN
             embedding                                  — list[float] len=768 or None
     """
-    df = pd.DataFrame(index=dates)
-    df.index.name = "date"
+    idx_part = index_df.reindex(index=dates, columns=INDEX_FEATURES)
 
-    for col in INDEX_FEATURES:
-        df[col] = index_df[col].reindex(dates) if col in index_df.columns else np.nan
-
-    for col in all_closes.columns:
-        df[col] = all_closes[col].reindex(dates)
-
+    # news features
+    parts = [idx_part, company_df]
     if news_df is not None:
-        for col in ["prob_positive", "prob_negative", "prob_neutral", "label", "embedding"]:
-            df[col] = news_df[col].reindex(dates) if col in news_df.columns else None
-        if "embedding" in df.columns:
-            df["embedding"] = df["embedding"].apply(
+        news_cols = ["prob_positive", "prob_negative", "prob_neutral", "label", "embedding"]
+        news_part = news_df.reindex(index=dates, columns=news_cols)
+        if "embedding" in news_part.columns:
+            news_part["embedding"] = news_part["embedding"].apply(
                 lambda x: x.tolist() if isinstance(x, np.ndarray) else None
             )
+        parts.append(news_part)
+
+    df = pd.concat(parts, axis=1)
+    df.index.name = "date"
 
     out = df.reset_index()
     out.insert(0, "id", id)
@@ -460,14 +461,14 @@ def build_case1(companies: dict, index: pd.DataFrame, news: pd.DataFrame, id: st
     out_dir = os.path.join(DATASETS_DIR, "case_1_agg_news")
     os.makedirs(out_dir, exist_ok=True)
 
-    trading_dates  = get_trading_dates(index)
-    all_closes     = get_all_closes(companies, trading_dates).ffill().bfill()
-    agg_news       = aggregate_news_to_trading_days(news, trading_dates)
-    index_features = index[[c for c in INDEX_FEATURES if c in index.columns]]
+    trading_dates    = get_trading_dates(index)
+    company_features = get_all_company_features(companies).reindex(trading_dates).ffill().bfill()
+    agg_news         = aggregate_news_to_trading_days(news, trading_dates)
+    index_features   = index[[c for c in INDEX_FEATURES if c in index.columns]]
 
     save_target(index, trading_dates, out_dir, id=id)
     save_feature_covariates(trading_dates, out_dir, index_df=index)
-    save_dynamic_covariates(index_features, all_closes, agg_news, trading_dates, out_dir, id=id)
+    save_dynamic_covariates(index_features, company_features, agg_news, trading_dates, out_dir, id=id)
 
 
 def build_case2(companies: dict, index: pd.DataFrame, news: pd.DataFrame, id: str = ""):
@@ -521,14 +522,14 @@ def build_case2(companies: dict, index: pd.DataFrame, news: pd.DataFrame, id: st
     has_news  = news.reindex(full_range)["prob_positive"].notna()
     all_dates = full_range[has_close | has_news]
 
-    all_closes     = get_all_closes(companies, all_dates).ffill().bfill()
-    trading_mask   = get_trading_mask(index, all_dates)
-    index_filled   = index.reindex(all_dates).ffill().bfill()
-    index_features = index_filled[[c for c in INDEX_FEATURES if c in index_filled.columns]]
+    company_features = get_all_company_features(companies).reindex(all_dates).ffill().bfill()
+    trading_mask     = get_trading_mask(index, all_dates)
+    index_filled     = index.reindex(all_dates).ffill().bfill()
+    index_features   = index_filled[[c for c in INDEX_FEATURES if c in index_filled.columns]]
 
     save_target(index, all_dates, out_dir, id=id)
     save_feature_covariates(all_dates, out_dir, trading_mask=trading_mask)
-    save_dynamic_covariates(index_features, all_closes, news, all_dates, out_dir, id=id)
+    save_dynamic_covariates(index_features, company_features, news, all_dates, out_dir, id=id)
 
 
 def build_case3(companies: dict, index: pd.DataFrame, news: pd.DataFrame, id: str = ""):
@@ -568,14 +569,14 @@ def build_case3(companies: dict, index: pd.DataFrame, news: pd.DataFrame, id: st
     out_dir = os.path.join(DATASETS_DIR, "case_3_discard")
     os.makedirs(out_dir, exist_ok=True)
 
-    trading_dates  = get_trading_dates(index)
-    all_closes     = get_all_closes(companies, trading_dates).ffill().bfill()
-    news_trading   = news.reindex(trading_dates)
-    index_features = index[[c for c in INDEX_FEATURES if c in index.columns]]
+    trading_dates    = get_trading_dates(index)
+    company_features = get_all_company_features(companies).reindex(trading_dates).ffill().bfill()
+    news_trading     = news.reindex(trading_dates)
+    index_features   = index[[c for c in INDEX_FEATURES if c in index.columns]]
 
     save_target(index, trading_dates, out_dir, id=id)
     save_feature_covariates(trading_dates, out_dir, index_df=index)
-    save_dynamic_covariates(index_features, all_closes, news_trading, trading_dates, out_dir, id=id)
+    save_dynamic_covariates(index_features, company_features, news_trading, trading_dates, out_dir, id=id)
 
 
 # ── main ──────────────────────────────────────────────────────────────────────
