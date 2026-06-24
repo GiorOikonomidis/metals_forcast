@@ -5,7 +5,7 @@ import pandas as pd
 from config import ENRICHED_DATASETS_DIR, COMPANIES_DIR, INDEX_DIR, NEWS_DIR, DATASETS_DIR, DATE_FEAT_COLS, INDEX_FEATURES
 
 NEWS_CUTOFF_DATE = pd.Timestamp("2026-01-01")
-
+COMPS_MAX_START_YEAR = 2007
 
 # ── loaders ───────────────────────────────────────────────────────────────────
 
@@ -38,7 +38,7 @@ def load_companies_2007() -> dict[str, pd.DataFrame]:
         ticker = f.replace(".csv", "")
         df = pd.read_csv(os.path.join(enr_dir, f), index_col="Date", parse_dates=True)
         df = df[~df.index.duplicated(keep="last")]
-        if df.index.min().year == 2007:
+        if df.index.min().year == COMPS_MAX_START_YEAR:
             companies[ticker] = df
     print(f"Loaded {len(companies)} companies starting from 2007")
     return companies
@@ -205,14 +205,16 @@ def fill_news_isolated_gaps(news: pd.DataFrame) -> pd.DataFrame:
 
     for i in range(1, len(df) - 1):
         d, d_prev, d_next = idx[i], idx[i - 1], idx[i + 1]
-        if (pd.isna(df.at[d, "prob_positive"])
-                and pd.notna(df.at[d_prev, "prob_positive"])
-                and pd.notna(df.at[d_next, "prob_positive"])):
+        # current day missing before and after exists
+        if (pd.isna(df.at[d, "prob_positive"]) and pd.notna(df.at[d_prev, "prob_positive"]) and pd.notna(df.at[d_next, "prob_positive"])):
+            # avg prob distr 
             for col in prob_cols:
                 df.at[d, col] = (df.at[d_prev, col] + df.at[d_next, col]) / 2
+            # avg embeddingd
             emb_b, emb_a = df.at[d_prev, "embedding"], df.at[d_next, "embedding"]
             if emb_b is not None and emb_a is not None:
                 df.at[d, "embedding"] = (np.array(emb_b) + np.array(emb_a)) / 2
+            # pick the label
             probs = [df.at[d, c] for c in prob_cols]
             df.at[d, "label"] = ["positive", "negative", "neutral"][int(np.argmax(probs))]
             filled += 1
@@ -284,6 +286,7 @@ def save_feature_covariates(
     df["sin_doy"]   = np.sin(2 * np.pi * dates.dayofyear / 365)
     df["cos_doy"]   = np.cos(2 * np.pi * dates.dayofyear / 365)
     df.index.name = "date"
+
     if trading_mask is not None:
         df["trading_day"] = trading_mask.reindex(dates).astype(int)
     df.reset_index().to_parquet(os.path.join(out_dir, "feature_covariates.parquet"), index=False)
@@ -429,7 +432,8 @@ def build_case_mask(companies: dict, index: pd.DataFrame, news: pd.DataFrame, id
     print("\nBuilding case_mask...")
     out_dir = os.path.join(DATASETS_DIR, "case_mask")
     os.makedirs(out_dir, exist_ok=True)
-
+    
+    # here we dont 
     all_dates        = _build_all_dates(index, news, cutoff_date=NEWS_CUTOFF_DATE)
     trading_dates    = get_trading_dates(index)
     company_features = (get_all_company_features(companies)
@@ -475,10 +479,13 @@ def build_case_interp(companies: dict, index: pd.DataFrame, news: pd.DataFrame, 
     os.makedirs(out_dir, exist_ok=True)
 
     all_dates        = _build_all_dates(index, news, cutoff_date=NEWS_CUTOFF_DATE)
+    # after interppolation we might have missing values in comps dur to differece strating dates 
+    # interpolation cant fill these values due to  absence of the signal 
     company_features = (get_all_company_features(companies)
                         .reindex(all_dates)
                         .interpolate(method="time")
-                        .ffill().bfill())
+                        .ffill().bfill()
+                        )
     index_filled     = index.reindex(all_dates).interpolate(method="time").ffill().bfill()
     index_features   = index_filled[[c for c in INDEX_FEATURES if c in index_filled.columns]]
 
