@@ -162,7 +162,7 @@ Requires Python ≥3.10. A CUDA GPU is optional — the runtime probes for one a
 |---|---|
 | [`model_impl/`](model_impl/) | The model, training loop, evaluation suite. → [usage guide](model_impl/README.md) · [architecture reference](model_impl/code_structure.md) |
 | [`data_creation/`](data_creation/) | Dataset pipeline: price/news download → FinBERT+MiniLM NLP pass → technical indicators → merged parquet. → [docs](data_creation/README.md) |
-| [`val_data/`](val_data/) | Standalone analysis: correlation/attention studies, synthetic-signal generators, token-distribution diagnostics |
+| [`val_data/`](val_data/) | Standalone analysis: correlation/attention studies, synthetic-signal generators, token-distribution diagnostics, data-quality checks ([`helpers_checkers/`](val_data/helpers_checkers/)), report figures ([`report_figures/`](val_data/report_figures/)), and a Monte-Carlo sampling study ([`logits_over_probs/`](val_data/logits_over_probs/monte_carlo_review.md)) |
 | [`experiments/`](experiments/) | Sweep configs and generator for the 20-run study |
 | [`results/`](results/) | Per-run metrics, configs and figures. → [**INDEX.md**](results/INDEX.md) |
 | [`Overall.md`](Overall.md) | Project post-mortem: findings, open questions, next steps |
