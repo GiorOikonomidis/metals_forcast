@@ -1,0 +1,39 @@
+# Core scientific stack
+numpy
+pandas
+scipy
+
+# Deep learning
+torch
+# For CUDA (uncomment and adjust for your GPU driver):
+# torch --index-url https://download.pytorch.org/whl/cu121
+
+# Hugging Face / Chronos
+transformers
+chronos-forecasting
+
+# NLP / embeddings
+sentence-transformers
+
+# Machine learning utilities
+scikit-learn
+properscoring
+
+# Visualisation
+matplotlib
+seaborn
+
+# Progress bars
+tqdm
+
+# Parquet support
+pyarrow
+
+# Config file parsing
+pyyaml
+
+# Experiment tracking
+mlflow
+
+# Django (temporary — still imported in test_.py)
+django

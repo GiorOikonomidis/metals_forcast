@@ -1,0 +1,61 @@
+[2026-07-29 14:04:54,641]  INFO model_impl.data_loading.splitting: temporal_split [train]: T=6320  2007-01-25 -> 2024-07-18
+[2026-07-29 14:04:54,641]  INFO model_impl.data_loading.splitting: temporal_split [val]: T=395  2024-06-19 -> 2025-07-18
+[2026-07-29 14:04:54,641]  INFO model_impl.data_loading.splitting: temporal_split [test]: T=395  2025-06-19 -> 2026-07-27
+[2026-07-29 14:04:55,320]  INFO model_impl.data_loading.windowing: 
+[train]
+  xe : (6284, 30)  token id [1281, 2711]
+  xn : (6284, 30, 768)  embedding norm mean 0.000
+  xc : (6284, 30, 1)  price range [-0.2, 0.3]
+  y  : (6284, 7)   token id [1177, 2786]
+  scales: (6284,)   scale values [0.00715, 0.01775] mean=0.0
+  Predictions span: 2007-02-24 -> 2024-07-12  (N=6284)
+[2026-07-29 14:04:55,321]  INFO model_impl.data_loading.windowing: 
+[val]
+  xe : (359, 30)  token id [1498, 2663]
+  xn : (359, 30, 768)  embedding norm mean 0.000
+  xc : (359, 30, 1)  price range [-0.1, 0.1]
+  y  : (359, 7)   token id [1512, 2647]
+  scales: (359,)   scale values [0.00780, 0.01411] mean=0.0
+  Predictions span: 2024-07-19 -> 2025-07-12  (N=359)
+[2026-07-29 14:04:55,323]  INFO model_impl.data_loading.windowing: 
+[test]
+  xe : (359, 30)  token id [1544, 2600]
+  xn : (359, 30, 768)  embedding norm mean 0.000
+  xc : (359, 30, 1)  price range [-0.2, 0.1]
+  y  : (359, 7)   token id [1580, 2741]
+  scales: (359,)   scale values [0.00842, 0.01428] mean=0.0
+  Predictions span: 2025-07-19 -> 2026-07-17  (N=359)
+[2026-07-29 14:05:01,326]  INFO model_impl.scripts.training: ep=  0  train_ce=8.0860  val_ce=7.5400  lr=1.00e-04
+[2026-07-29 14:05:06,466]  INFO model_impl.scripts.training: ep=  1  train_ce=7.2732  val_ce=7.0199  lr=1.00e-04
+[2026-07-29 14:05:11,596]  INFO model_impl.scripts.training: ep=  2  train_ce=6.8509  val_ce=6.8333  lr=1.00e-04
+[2026-07-29 14:05:16,732]  INFO model_impl.scripts.training: ep=  3  train_ce=6.6898  val_ce=6.7814  lr=1.00e-04
+[2026-07-29 14:05:21,920]  INFO model_impl.scripts.training: ep=  4  train_ce=6.6363  val_ce=6.7744  lr=1.00e-04
+[2026-07-29 14:05:27,136]  INFO model_impl.scripts.training: ep=  5  train_ce=6.6152  val_ce=6.7728  lr=1.00e-04
+[2026-07-29 14:05:32,272]  INFO model_impl.scripts.training: ep=  6  train_ce=6.6101  val_ce=6.7682  lr=1.00e-04
+[2026-07-29 14:05:37,431]  INFO model_impl.scripts.training: ep=  7  train_ce=6.5996  val_ce=6.7682  lr=1.00e-04
+[2026-07-29 14:05:42,621]  INFO model_impl.scripts.training: ep=  8  train_ce=6.5958  val_ce=6.7695  lr=1.00e-04
+[2026-07-29 14:05:47,731]  INFO model_impl.scripts.training: ep=  9  train_ce=6.5927  val_ce=6.7742  lr=1.00e-04
+[2026-07-29 14:05:52,859]  INFO model_impl.scripts.training: ep= 10  train_ce=6.5964  val_ce=6.7783  lr=1.00e-04
+[2026-07-29 14:05:58,099]  INFO model_impl.scripts.training: ep= 11  train_ce=6.5868  val_ce=6.7763  lr=1.00e-04
+[2026-07-29 14:06:03,313]  INFO model_impl.scripts.training: ep= 12  train_ce=6.5924  val_ce=6.7716  lr=1.00e-04
+[2026-07-29 14:06:08,523]  INFO model_impl.scripts.training: ep= 13  train_ce=6.5911  val_ce=6.7712  lr=1.00e-04
+[2026-07-29 14:06:13,713]  INFO model_impl.scripts.training: ep= 14  train_ce=6.5839  val_ce=6.7732  lr=1.00e-04
+[2026-07-29 14:06:18,925]  INFO model_impl.scripts.training: ep= 15  train_ce=6.5795  val_ce=6.7761  lr=1.00e-04
+[2026-07-29 14:06:24,148]  INFO model_impl.scripts.training: ep= 16  train_ce=6.5886  val_ce=6.7805  lr=1.00e-04
+[2026-07-29 14:15:19,317]  INFO model_impl.scripts.test: 
+# ✅ Evaluated 359 windows with 1 covariates and no news
+#  • MSE    : 1.1813e-04 (skill vs naïve = 0.006)
+#  • MAE    : 8.0635e-03 (skill vs naïve = 0.006)
+#  • sMAPE  : 2.44%
+#  • CRPS   : 6.5959e-03
+#  • WIS50  : 2.8517e-02 | WIS80: 5.3316e-02 | WIS90: 8.5530e-02
+#  • Cov@50 : 0.188 | Cov@80: 0.362 | Cov@90: 0.448
+#  • Sharp80: 8.8493e-03
+#  • ECE(q) : 3.3061e-01
+#  • DM test (MSE vs naïve): stat=-0.289, p=0.7728
+# ⏱ Total time: 00:10:25
+
+[2026-07-29 14:15:20,659]  INFO model_impl.main: # 📦 Artifacts saved in synthetic/rand_walk/AR1_RETURNS/log_diff_c_1_w_no_news/20260729
+
+🏃 View run rand_walk at: http://127.0.0.1:5000/#/experiments/2/runs/8e3b426b02bc414b8d03e4d68c42db85
+🧪 View experiment at: http://127.0.0.1:5000/#/experiments/2

@@ -1,0 +1,120 @@
+[2026-07-29 12:49:50,294]  INFO model_impl.data_loading.splitting: temporal_split [train]: T=6320  2007-01-25 -> 2024-07-18
+[2026-07-29 12:49:50,294]  INFO model_impl.data_loading.splitting: temporal_split [val]: T=395  2024-06-19 -> 2025-07-18
+[2026-07-29 12:49:50,294]  INFO model_impl.data_loading.splitting: temporal_split [test]: T=395  2025-06-19 -> 2026-07-27
+[2026-07-29 12:49:50,861]  INFO model_impl.data_loading.windowing: 
+[train]
+  xe : (6281, 30)  token id [1677, 2421]
+  xn : (6281, 30, 768)  embedding norm mean 0.000
+  xc : (6281, 30, 1)  price range [-0.2, 0.3]
+  y  : (6281, 10)   token id [1677, 2421]
+  scales: (6281,)   scale values [0.19533, 0.21309] mean=0.2
+  Predictions span: 2007-02-24 -> 2024-07-09  (N=6281)
+[2026-07-29 12:49:50,862]  INFO model_impl.data_loading.windowing: 
+[val]
+  xe : (356, 30)  token id [1708, 2390]
+  xn : (356, 30, 768)  embedding norm mean 0.000
+  xc : (356, 30, 1)  price range [-0.1, 0.1]
+  y  : (356, 10)   token id [1708, 2390]
+  scales: (356,)   scale values [0.21309, 0.21309] mean=0.2
+  Predictions span: 2024-07-19 -> 2025-07-09  (N=356)
+[2026-07-29 12:49:50,863]  INFO model_impl.data_loading.windowing: 
+[test]
+  xe : (356, 30)  token id [1708, 2390]
+  xn : (356, 30, 768)  embedding norm mean 0.000
+  xc : (356, 30, 1)  price range [-0.2, 0.1]
+  y  : (356, 10)   token id [1708, 2390]
+  scales: (356,)   scale values [0.21309, 0.21309] mean=0.2
+  Predictions span: 2025-07-19 -> 2026-07-14  (N=356)
+[2026-07-29 12:49:56,771]  INFO model_impl.scripts.training: ep=  0  train_ce=4.2197  val_ce=2.1549  lr=1.00e-04
+[2026-07-29 12:50:01,929]  INFO model_impl.scripts.training: ep=  1  train_ce=1.6575  val_ce=1.0915  lr=1.00e-04
+[2026-07-29 12:50:07,064]  INFO model_impl.scripts.training: ep=  2  train_ce=1.0714  val_ce=0.9764  lr=1.00e-04
+[2026-07-29 12:50:12,214]  INFO model_impl.scripts.training: ep=  3  train_ce=1.0003  val_ce=0.9640  lr=1.00e-04
+[2026-07-29 12:50:17,405]  INFO model_impl.scripts.training: ep=  4  train_ce=0.9739  val_ce=0.9034  lr=1.00e-04
+[2026-07-29 12:50:22,585]  INFO model_impl.scripts.training: ep=  5  train_ce=0.8527  val_ce=0.9143  lr=1.00e-04
+[2026-07-29 12:50:27,664]  INFO model_impl.scripts.training: ep=  6  train_ce=0.9531  val_ce=0.9016  lr=1.00e-04
+[2026-07-29 12:50:32,893]  INFO model_impl.scripts.training: ep=  7  train_ce=0.8690  val_ce=0.6992  lr=1.00e-04
+[2026-07-29 12:50:38,165]  INFO model_impl.scripts.training: ep=  8  train_ce=0.4433  val_ce=0.1355  lr=1.00e-04
+[2026-07-29 12:50:43,426]  INFO model_impl.scripts.training: ep=  9  train_ce=0.0899  val_ce=0.0190  lr=1.00e-04
+[2026-07-29 12:50:48,704]  INFO model_impl.scripts.training: ep= 10  train_ce=0.0312  val_ce=0.0098  lr=1.00e-04
+[2026-07-29 12:50:54,003]  INFO model_impl.scripts.training: ep= 11  train_ce=0.0189  val_ce=0.0068  lr=1.00e-04
+[2026-07-29 12:50:59,356]  INFO model_impl.scripts.training: ep= 12  train_ce=0.0144  val_ce=0.0054  lr=1.00e-04
+[2026-07-29 12:51:04,688]  INFO model_impl.scripts.training: ep= 13  train_ce=0.0121  val_ce=0.0047  lr=1.00e-04
+[2026-07-29 12:51:10,014]  INFO model_impl.scripts.training: ep= 14  train_ce=0.0106  val_ce=0.0041  lr=1.00e-04
+[2026-07-29 12:51:15,372]  INFO model_impl.scripts.training: ep= 15  train_ce=0.0095  val_ce=0.0037  lr=1.00e-04
+[2026-07-29 12:51:20,729]  INFO model_impl.scripts.training: ep= 16  train_ce=0.0087  val_ce=0.0034  lr=1.00e-04
+🏃 View run sin at: http://127.0.0.1:5000/#/experiments/2/runs/688c4397d80246fc8868d49548413ff9
+🧪 View experiment at: http://127.0.0.1:5000/#/experiments/2
+[2026-07-29 12:51:27,914]  INFO model_impl.data_loading.splitting: temporal_split [train]: T=6115  2007-01-25 -> 2023-12-26
+[2026-07-29 12:51:27,914]  INFO model_impl.data_loading.splitting: temporal_split [val]: T=395  2023-11-27 -> 2024-12-25
+[2026-07-29 12:51:27,914]  INFO model_impl.data_loading.splitting: temporal_split [test]: T=600  2024-11-26 -> 2026-07-27
+[2026-07-29 12:51:28,470]  INFO model_impl.data_loading.windowing: 
+[train]
+  xe : (6076, 30)  token id [1677, 2421]
+  xn : (6076, 30, 768)  embedding norm mean 0.000
+  xc : (6076, 30, 1)  price range [-0.2, 0.3]
+  y  : (6076, 10)   token id [1677, 2421]
+  scales: (6076,)   scale values [0.19533, 0.21309] mean=0.2
+  Predictions span: 2007-02-24 -> 2023-12-17  (N=6076)
+[2026-07-29 12:51:28,471]  INFO model_impl.data_loading.windowing: 
+[val]
+  xe : (356, 30)  token id [1708, 2390]
+  xn : (356, 30, 768)  embedding norm mean 0.000
+  xc : (356, 30, 1)  price range [-0.1, 0.1]
+  y  : (356, 10)   token id [1708, 2390]
+  scales: (356,)   scale values [0.21309, 0.21309] mean=0.2
+  Predictions span: 2023-12-27 -> 2024-12-16  (N=356)
+[2026-07-29 12:51:28,473]  INFO model_impl.data_loading.windowing: 
+[test]
+  xe : (561, 30)  token id [1708, 2390]
+  xn : (561, 30, 768)  embedding norm mean 0.000
+  xc : (561, 30, 1)  price range [-0.2, 0.1]
+  y  : (561, 10)   token id [1708, 2390]
+  scales: (561,)   scale values [0.21309, 0.21309] mean=0.2
+  Predictions span: 2024-12-26 -> 2026-07-14  (N=561)
+[2026-07-29 12:51:34,385]  INFO model_impl.scripts.training: ep=  0  train_ce=4.3646  val_ce=2.3082  lr=1.00e-04
+[2026-07-29 12:51:39,547]  INFO model_impl.scripts.training: ep=  1  train_ce=1.8007  val_ce=1.1470  lr=1.00e-04
+[2026-07-29 12:51:44,692]  INFO model_impl.scripts.training: ep=  2  train_ce=1.1092  val_ce=0.9837  lr=1.00e-04
+[2026-07-29 12:51:49,846]  INFO model_impl.scripts.training: ep=  3  train_ce=1.0089  val_ce=0.9601  lr=1.00e-04
+[2026-07-29 12:51:55,072]  INFO model_impl.scripts.training: ep=  4  train_ce=0.9807  val_ce=0.9256  lr=1.00e-04
+[2026-07-29 12:52:00,263]  INFO model_impl.scripts.training: ep=  5  train_ce=0.8755  val_ce=0.7497  lr=1.00e-04
+[2026-07-29 12:52:05,475]  INFO model_impl.scripts.training: ep=  6  train_ce=0.6140  val_ce=0.2147  lr=1.00e-04
+[2026-07-29 12:52:10,732]  INFO model_impl.scripts.training: ep=  7  train_ce=0.1530  val_ce=0.0290  lr=1.00e-04
+[2026-07-29 12:52:15,981]  INFO model_impl.scripts.training: ep=  8  train_ce=0.0421  val_ce=0.0129  lr=1.00e-04
+[2026-07-29 12:52:21,281]  INFO model_impl.scripts.training: ep=  9  train_ce=0.0233  val_ce=0.0087  lr=1.00e-04
+[2026-07-29 12:52:26,553]  INFO model_impl.scripts.training: ep= 10  train_ce=0.0173  val_ce=0.0069  lr=1.00e-04
+[2026-07-29 12:52:32,046]  INFO model_impl.scripts.training: ep= 11  train_ce=0.0145  val_ce=0.0059  lr=1.00e-04
+[2026-07-29 12:52:37,622]  INFO model_impl.scripts.training: ep= 12  train_ce=0.0127  val_ce=0.0053  lr=1.00e-04
+[2026-07-29 12:52:43,294]  INFO model_impl.scripts.training: ep= 13  train_ce=0.0113  val_ce=0.0048  lr=1.00e-04
+[2026-07-29 12:52:48,741]  INFO model_impl.scripts.training: ep= 14  train_ce=0.0104  val_ce=0.0044  lr=1.00e-04
+[2026-07-29 12:52:54,300]  INFO model_impl.scripts.training: ep= 15  train_ce=0.0096  val_ce=0.0040  lr=1.00e-04
+[2026-07-29 12:52:59,774]  INFO model_impl.scripts.training: ep= 16  train_ce=0.0090  val_ce=0.0038  lr=1.00e-04
+[2026-07-29 12:53:05,310]  INFO model_impl.scripts.training: ep= 17  train_ce=0.0083  val_ce=0.0035  lr=1.00e-04
+[2026-07-29 12:53:10,833]  INFO model_impl.scripts.training: ep= 18  train_ce=0.0078  val_ce=0.0033  lr=1.00e-04
+[2026-07-29 12:53:16,529]  INFO model_impl.scripts.training: ep= 19  train_ce=0.0073  val_ce=0.0031  lr=1.00e-04
+[2026-07-29 12:53:22,053]  INFO model_impl.scripts.training: ep= 20  train_ce=0.0070  val_ce=0.0029  lr=1.00e-04
+[2026-07-29 12:53:28,029]  INFO model_impl.scripts.training: ep= 21  train_ce=0.0066  val_ce=0.0028  lr=1.00e-04
+[2026-07-29 12:53:35,025]  INFO model_impl.scripts.training: ep= 22  train_ce=0.0063  val_ce=0.0027  lr=1.00e-04
+[2026-07-29 12:53:41,990]  INFO model_impl.scripts.training: ep= 23  train_ce=0.0060  val_ce=0.0025  lr=1.00e-04
+[2026-07-29 12:53:48,186]  INFO model_impl.scripts.training: ep= 24  train_ce=0.0057  val_ce=0.0024  lr=1.00e-04
+[2026-07-29 12:53:53,779]  INFO model_impl.scripts.training: ep= 25  train_ce=0.0054  val_ce=0.0023  lr=1.00e-04
+[2026-07-29 12:53:59,353]  INFO model_impl.scripts.training: ep= 26  train_ce=0.0052  val_ce=0.0022  lr=1.00e-04
+[2026-07-29 12:54:04,985]  INFO model_impl.scripts.training: ep= 27  train_ce=0.0050  val_ce=0.0021  lr=1.00e-04
+[2026-07-29 12:54:10,642]  INFO model_impl.scripts.training: ep= 28  train_ce=0.0048  val_ce=0.0020  lr=1.00e-04
+[2026-07-29 12:54:16,416]  INFO model_impl.scripts.training: ep= 29  train_ce=0.0046  val_ce=0.0019  lr=1.00e-04
+[2026-07-29 13:09:27,895]  INFO model_impl.scripts.test: 
+# ✅ Evaluated 561 windows with 1 covariates and no news
+#  • MSE    : 6.8334e-14 (skill vs naïve = 1.000)
+#  • MAE    : 1.7187e-07 (skill vs naïve = 1.000)
+#  • sMAPE  : 0.00%
+#  • CRPS   : 1.7187e-07
+#  • WIS50  : 6.8746e-07 | WIS80: 1.7187e-06 | WIS90: 3.4373e-06
+#  • Cov@50 : 0.520 | Cov@80: 0.520 | Cov@90: 0.520
+#  • Sharp80: 0.0000e+00
+#  • ECE(q) : 3.4869e-01
+#  • DM test (MSE vs naïve): stat=-1632.239, p=0.0000
+# ⏱ Total time: 00:18:00
+
+[2026-07-29 13:09:30,415]  INFO model_impl.main: # 📦 Artifacts saved in synthetic/square/SQUARE/log_diff_c_1_w_no_news/20260729
+
+🏃 View run sin at: http://127.0.0.1:5000/#/experiments/2/runs/de22acfa93374d6f988a98417127694b
+🧪 View experiment at: http://127.0.0.1:5000/#/experiments/2

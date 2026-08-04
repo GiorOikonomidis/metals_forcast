@@ -1,0 +1,38 @@
+# ---- Data (rebuilt via data_creation; too large to track) ----
+data/
+data_enriched/
+datasets/
+produced_data/
+*.parquet
+
+# ---- Run outputs ----
+output/
+mlruns/
+# Per-window forecast plots: hundreds of MB per run. The curated diagnostics
+# (coverage, PIT, reliability, skill-vs-naive, loss curves, horizons) ARE
+# tracked under results/; only the per-day dumps are excluded.
+results/**/forecasts/
+
+# ---- Secrets ----
+*.env
+!*.env.example
+
+# ---- Python ----
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+venv/
+.venv/
+
+# ---- Local scratch (not part of the project) ----
+run_m*.sh
+.claude/
+cross_attention_chronos_currency.py
+TODO.txt
+
+# ---- IDE / OS ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

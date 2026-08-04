@@ -1,0 +1,5 @@
+[2026-07-28 15:36:38,004]  INFO model_impl.data_loading.splitting: temporal_split [train]: T=924  2022-01-01 -> 2024-07-12
+[2026-07-28 15:36:38,004]  INFO model_impl.data_loading.splitting: temporal_split [val]: T=495  2024-03-05 -> 2025-07-12
+[2026-07-28 15:36:38,005]  INFO model_impl.data_loading.splitting: temporal_split [test]: T=495  2025-03-05 -> 2026-07-12
+🏃 View run transr__temp1_1__log_diff at: http://127.0.0.1:5000/#/experiments/1/runs/1ef58dbc3f3a47e5b0933c774a3a48f1
+🧪 View experiment at: http://127.0.0.1:5000/#/experiments/1

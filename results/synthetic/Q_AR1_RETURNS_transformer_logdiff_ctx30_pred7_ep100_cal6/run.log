@@ -1,0 +1,65 @@
+[2026-07-29 14:25:01,553]  INFO model_impl.data_loading.splitting: temporal_split [train]: T=6320  2007-01-25 -> 2024-07-18
+[2026-07-29 14:25:01,553]  INFO model_impl.data_loading.splitting: temporal_split [val]: T=395  2024-06-19 -> 2025-07-18
+[2026-07-29 14:25:01,554]  INFO model_impl.data_loading.splitting: temporal_split [test]: T=395  2025-06-19 -> 2026-07-27
+[2026-07-29 14:25:02,108]  INFO model_impl.data_loading.windowing: 
+[train]
+  xe : (6284, 30)  token id [1281, 2711]
+  xn : (6284, 30, 768)  embedding norm mean 0.000
+  xc : (6284, 30, 6)  price range [-1.2, 1.9]
+  y  : (6284, 7)   token id [1177, 2786]
+  scales: (6284,)   scale values [0.00715, 0.01775] mean=0.0
+  Predictions span: 2007-02-24 -> 2024-07-12  (N=6284)
+[2026-07-29 14:25:02,110]  INFO model_impl.data_loading.windowing: 
+[val]
+  xe : (359, 30)  token id [1498, 2663]
+  xn : (359, 30, 768)  embedding norm mean 0.000
+  xc : (359, 30, 6)  price range [-0.9, 0.8]
+  y  : (359, 7)   token id [1512, 2647]
+  scales: (359,)   scale values [0.00780, 0.01411] mean=0.0
+  Predictions span: 2024-07-19 -> 2025-07-12  (N=359)
+[2026-07-29 14:25:02,111]  INFO model_impl.data_loading.windowing: 
+[test]
+  xe : (359, 30)  token id [1544, 2600]
+  xn : (359, 30, 768)  embedding norm mean 0.000
+  xc : (359, 30, 6)  price range [-0.9, 1.9]
+  y  : (359, 7)   token id [1580, 2741]
+  scales: (359,)   scale values [0.00842, 0.01428] mean=0.0
+  Predictions span: 2025-07-19 -> 2026-07-17  (N=359)
+[2026-07-29 14:25:07,792]  INFO model_impl.scripts.training: ep=  0  train_ce=8.0891  val_ce=7.5517  lr=1.00e-04
+[2026-07-29 14:25:12,731]  INFO model_impl.scripts.training: ep=  1  train_ce=7.2834  val_ce=7.0329  lr=1.00e-04
+[2026-07-29 14:25:17,693]  INFO model_impl.scripts.training: ep=  2  train_ce=6.8603  val_ce=6.8434  lr=1.00e-04
+[2026-07-29 14:25:22,676]  INFO model_impl.scripts.training: ep=  3  train_ce=6.6894  val_ce=6.7863  lr=1.00e-04
+[2026-07-29 14:25:27,748]  INFO model_impl.scripts.training: ep=  4  train_ce=6.6401  val_ce=6.7750  lr=1.00e-04
+[2026-07-29 14:25:32,817]  INFO model_impl.scripts.training: ep=  5  train_ce=6.6094  val_ce=6.7687  lr=1.00e-04
+[2026-07-29 14:25:37,872]  INFO model_impl.scripts.training: ep=  6  train_ce=6.6045  val_ce=6.7668  lr=1.00e-04
+[2026-07-29 14:25:43,007]  INFO model_impl.scripts.training: ep=  7  train_ce=6.6040  val_ce=6.7685  lr=1.00e-04
+[2026-07-29 14:25:48,119]  INFO model_impl.scripts.training: ep=  8  train_ce=6.6014  val_ce=6.7697  lr=1.00e-04
+[2026-07-29 14:25:53,139]  INFO model_impl.scripts.training: ep=  9  train_ce=6.5907  val_ce=6.7673  lr=1.00e-04
+[2026-07-29 14:25:58,183]  INFO model_impl.scripts.training: ep= 10  train_ce=6.5929  val_ce=6.7600  lr=1.00e-04
+[2026-07-29 14:26:03,376]  INFO model_impl.scripts.training: ep= 11  train_ce=6.5916  val_ce=6.7642  lr=1.00e-04
+[2026-07-29 14:26:08,463]  INFO model_impl.scripts.training: ep= 12  train_ce=6.5918  val_ce=6.7698  lr=1.00e-04
+[2026-07-29 14:26:13,567]  INFO model_impl.scripts.training: ep= 13  train_ce=6.5845  val_ce=6.7744  lr=1.00e-04
+[2026-07-29 14:26:18,735]  INFO model_impl.scripts.training: ep= 14  train_ce=6.5852  val_ce=6.7770  lr=1.00e-04
+[2026-07-29 14:26:23,881]  INFO model_impl.scripts.training: ep= 15  train_ce=6.5819  val_ce=6.7759  lr=1.00e-04
+[2026-07-29 14:26:29,027]  INFO model_impl.scripts.training: ep= 16  train_ce=6.5727  val_ce=6.7722  lr=1.00e-04
+[2026-07-29 14:26:34,207]  INFO model_impl.scripts.training: ep= 17  train_ce=6.5753  val_ce=6.7824  lr=1.00e-04
+[2026-07-29 14:26:39,374]  INFO model_impl.scripts.training: ep= 18  train_ce=6.5739  val_ce=6.7856  lr=1.00e-04
+[2026-07-29 14:26:44,676]  INFO model_impl.scripts.training: ep= 19  train_ce=6.5668  val_ce=6.7887  lr=1.00e-04
+[2026-07-29 14:26:49,876]  INFO model_impl.scripts.training: ep= 20  train_ce=6.5534  val_ce=6.7905  lr=1.00e-04
+[2026-07-29 14:35:10,514]  INFO model_impl.scripts.test: 
+# ✅ Evaluated 359 windows with 6 covariates and no news
+#  • MSE    : 1.1743e-04 (skill vs naïve = 0.012)
+#  • MAE    : 8.0390e-03 (skill vs naïve = 0.009)
+#  • sMAPE  : 2.43%
+#  • CRPS   : 6.5782e-03
+#  • WIS50  : 2.8411e-02 | WIS80: 5.3217e-02 | WIS90: 8.5665e-02
+#  • Cov@50 : 0.190 | Cov@80: 0.362 | Cov@90: 0.447
+#  • Sharp80: 8.8438e-03
+#  • ECE(q) : 3.3107e-01
+#  • DM test (MSE vs naïve): stat=-0.615, p=0.5389
+# ⏱ Total time: 00:10:09
+
+[2026-07-29 14:35:11,792]  INFO model_impl.main: # 📦 Artifacts saved in synthetic/rand_walk__with_feta_covs/AR1_RETURNS/log_diff_c_6_w_no_news/20260729
+
+🏃 View run rand_walk__with_feta_covs at: http://127.0.0.1:5000/#/experiments/2/runs/cf84d216001d49b8bfa67db77ff3a40a
+🧪 View experiment at: http://127.0.0.1:5000/#/experiments/2

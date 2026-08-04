@@ -1,0 +1,119 @@
+DATA:
+  # Target series to forecast, selected from the long-format file (--target-covariate-path)
+  TARGET:
+    ID: "IRON"
+    FEATURE: "close"
+
+  # Per-id covariates from the same long file: each entry is [id, [features]]
+  COVARIATES:
+    - ["XAU", ["close"]]
+    - ["XAG", ["close"]]
+    - ["XCU", ["close"]]
+
+  # Scalar columns from the wide global file (--global-covariate-path)
+  GLOBAL_COVARIATES: [
+    "AA_open", "BHP_open", "FCX_open", "MP_open", "REMX_open", "RIO_open", "STOXX50E_open",
+    "AA_high", "BHP_high", "FCX_high", "MP_high", "REMX_high", "RIO_high", "STOXX50E_high",
+    "AA_low", "BHP_low", "FCX_low", "MP_low", "REMX_low", "RIO_low", "STOXX50E_low",
+    "AA_close", "BHP_close", "FCX_close", "MP_close", "REMX_close", "RIO_close", "STOXX50E_close",
+    "BRENTOIL_open", "CL1_open", "NG_open",
+    "BRENTOIL_high", "CL1_high", "NG_high",
+    "BRENTOIL_low", "CL1_low", "NG_low",
+    "BRENTOIL_close", "CL1_close", "NG_close",
+    "eur_usd", "eur_cny",
+  ]
+
+  # embedding column name in the wide global file (news; only read when no_news is off)
+  NEWS_COL: "embedding"
+
+  # End-anchored, duration-based splits (row counts on the aligned series):
+  # test = last TEST_DAYS rows, val = VAL_DAYS rows before, train = the rest.
+  SPLITS:
+    TEST_DAYS: 250
+    VAL_DAYS:  250
+
+  PRED_LEN: 7
+  CTX_LEN: 30
+
+  TOKEN_ALL: true
+  SHUFFLE_DATA: true
+  TYPE_OF_DIFF: "no_diff"  # no_diff | diff | log_diff
+
+
+SEED: 1
+
+
+MODEL:
+  COMP_ENC: "amazon/chronos-t5-base"
+  CROSS_CHRONOS:
+    configs:
+      EMB_DIM_NEWS: 768   # news embedding dim (news_proj input)
+      D_MODEL: 768        # chronos encoder / fusion dim
+      N_HEADS: 8
+      N_LAYERS_TXT: 3
+      D_FF: 1024
+      DROPOUT: 0.2
+      HEAD: "linear"  # linear | mlp | lstm | transformer
+
+
+TRAINING:
+  EPOCHS: 3
+  LR: 0.00001         # base learning rate; used as-is if SCHEDULER.use is false
+  WEIGHT_DECAY: 0.0001
+  GRAD_CLIP: null
+  BATCH_SIZE: 256
+  LABEL_SMOOTHING: 0.15
+
+
+EVALUATION:
+  WINDOWS: 30       # null = evaluate every test window
+  MC_SAMPLES: 100
+
+  CENTRAL_INTERVAL:
+    ALPHA_50: 0.5
+    ALPHA_80: 0.2
+    ALPHA_90: 0.1
+
+  ECE_QUANTILE_GRID:
+    ECE_Q_START: 0.05
+    ECE_Q_STOP: 0.95
+    ECE_Q_STEPS: 19
+
+  FAITH:
+    FAITH_MC_SAMPLES: 100
+    FAITH_KS: [1, 2, 3, 5, 8, 10, 15, 20, 25, 30]
+    FAITH_TOPK: 5
+    FAITH_STABILITY_RUNS: 5
+    FAITH_PLACEBO_SHIFTS: [-3, -1, 1, 3]
+    FAITH_MASK_STRATEGY: "mean"  # mean | zero
+    FAITH_RNG_SEED: 123
+
+SCHEDULER:
+  use: true
+  configs:
+    LR_COLD_START: 0.00001
+    LR_COLD_EPOCHS: 30
+    LR_DECREASE_FACTOR: 0.5
+    LR_METRIC: "val"  # val | train
+    LR_PLATEAU_PATIENCE: 10
+
+
+EARLY_STOPPER:
+  use: true
+  configs:
+    EARLY_STOPPER_PATIENCE: 20
+
+# here we will config mlflow
+
+TRACKING:
+  MLFLOW:
+    use: false
+    configs:
+      URI: "http://127.0.0.1:5050"
+      EXPIREMENT: "metals_forecast"
+      RUN: "feature_branch__no_news_batched code"
+      LOG_MODEL: false
+  LOCAL:
+    use: false
+    configs:
+      dir: ""

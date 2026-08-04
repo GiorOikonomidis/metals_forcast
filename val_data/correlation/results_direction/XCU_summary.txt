@@ -1,0 +1,21 @@
+N=7049  cramers_v=0.0254  label_pearson_r=0.0283
+direction counts: {1.0: 3562, -1.0: 3454, 0.0: 33}
+
+prob_* correlation:
+prob_positive    0.019971
+prob_negative   -0.034987
+prob_neutral     0.014263
+dtype: float64
+
+embedding PCA correlation:
+embedding_pc6     0.035864
+embedding_pc2    -0.027526
+embedding_pc8    -0.022098
+embedding_pc9    -0.019770
+embedding_pc10   -0.017079
+embedding_pc7    -0.016330
+embedding_pc1     0.012977
+embedding_pc3    -0.010308
+embedding_pc4     0.006576
+embedding_pc5    -0.005691
+dtype: float64

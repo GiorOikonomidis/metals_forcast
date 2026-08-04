@@ -1,0 +1,93 @@
+[2026-07-29 17:03:20,738]  INFO model_impl.data_loading.splitting: temporal_split [train]: T=6320  2007-01-25 -> 2024-07-18
+[2026-07-29 17:03:20,738]  INFO model_impl.data_loading.splitting: temporal_split [val]: T=465  2024-04-10 -> 2025-07-18
+[2026-07-29 17:03:20,738]  INFO model_impl.data_loading.splitting: temporal_split [test]: T=465  2025-04-10 -> 2026-07-27
+[2026-07-29 17:03:22,185]  INFO model_impl.data_loading.windowing: 
+[train]
+  xe : (6214, 100)  token id [2122, 2287]
+  xn : (6214, 100, 768)  embedding norm mean 0.000
+  xc : (6214, 100, 6)  price range [-1.0, 1.0]
+  y  : (6214, 7)   token id [2120, 2237]
+  scales: (6214,)   scale values [1.46675, 4.59201] mean=3.2
+  Predictions span: 2007-05-07 -> 2024-07-12  (N=6214)
+[2026-07-29 17:03:22,188]  INFO model_impl.data_loading.windowing: 
+[val]
+  xe : (359, 100)  token id [2167, 2211]
+  xn : (359, 100, 768)  embedding norm mean 0.000
+  xc : (359, 100, 6)  price range [-1.0, 1.0]
+  y  : (359, 7)   token id [2167, 2211]
+  scales: (359,)   scale values [4.18355, 4.76894] mean=4.4
+  Predictions span: 2024-07-19 -> 2025-07-12  (N=359)
+[2026-07-29 17:03:22,192]  INFO model_impl.data_loading.windowing: 
+[test]
+  xe : (359, 100)  token id [2168, 2215]
+  xn : (359, 100, 768)  embedding norm mean 0.000
+  xc : (359, 100, 6)  price range [-1.0, 1.0]
+  y  : (359, 7)   token id [2168, 2212]
+  scales: (359,)   scale values [4.70997, 6.17524] mean=5.3
+  Predictions span: 2025-07-19 -> 2026-07-17  (N=359)
+🏃 View run TRANS_feat_covs__with_news at: http://127.0.0.1:5000/#/experiments/4/runs/5ec0f01f789f40d1acc5e3dc51128c30
+🧪 View experiment at: http://127.0.0.1:5000/#/experiments/4
+[2026-07-29 17:03:38,307]  INFO model_impl.data_loading.splitting: temporal_split [train]: T=6320  2007-01-25 -> 2024-07-18
+[2026-07-29 17:03:38,308]  INFO model_impl.data_loading.splitting: temporal_split [val]: T=465  2024-04-10 -> 2025-07-18
+[2026-07-29 17:03:38,308]  INFO model_impl.data_loading.splitting: temporal_split [test]: T=465  2025-04-10 -> 2026-07-27
+[2026-07-29 17:03:39,625]  INFO model_impl.data_loading.windowing: 
+[train]
+  xe : (6214, 100)  token id [2122, 2287]
+  xn : (6214, 100, 768)  embedding norm mean 0.000
+  xc : (6214, 100, 6)  price range [-1.0, 1.0]
+  y  : (6214, 7)   token id [2120, 2237]
+  scales: (6214,)   scale values [1.46675, 4.59201] mean=3.2
+  Predictions span: 2007-05-07 -> 2024-07-12  (N=6214)
+[2026-07-29 17:03:39,629]  INFO model_impl.data_loading.windowing: 
+[val]
+  xe : (359, 100)  token id [2167, 2211]
+  xn : (359, 100, 768)  embedding norm mean 0.000
+  xc : (359, 100, 6)  price range [-1.0, 1.0]
+  y  : (359, 7)   token id [2167, 2211]
+  scales: (359,)   scale values [4.18355, 4.76894] mean=4.4
+  Predictions span: 2024-07-19 -> 2025-07-12  (N=359)
+[2026-07-29 17:03:39,633]  INFO model_impl.data_loading.windowing: 
+[test]
+  xe : (359, 100)  token id [2168, 2215]
+  xn : (359, 100, 768)  embedding norm mean 0.000
+  xc : (359, 100, 6)  price range [-1.0, 1.0]
+  y  : (359, 7)   token id [2168, 2212]
+  scales: (359,)   scale values [4.70997, 6.17524] mean=5.3
+  Predictions span: 2025-07-19 -> 2026-07-17  (N=359)
+🏃 View run TRANS_feat_covs__with_news at: http://127.0.0.1:5000/#/experiments/4/runs/93bc5ea6b4f1433b871f192fafafdf5b
+🧪 View experiment at: http://127.0.0.1:5000/#/experiments/4
+[2026-07-29 17:03:59,639]  INFO model_impl.data_loading.splitting: temporal_split [train]: T=6320  2007-01-25 -> 2024-07-18
+[2026-07-29 17:03:59,639]  INFO model_impl.data_loading.splitting: temporal_split [val]: T=465  2024-04-10 -> 2025-07-18
+[2026-07-29 17:03:59,639]  INFO model_impl.data_loading.splitting: temporal_split [test]: T=465  2025-04-10 -> 2026-07-27
+[2026-07-29 17:04:00,929]  INFO model_impl.data_loading.windowing: 
+[train]
+  xe : (6214, 100)  token id [2122, 2287]
+  xn : (6214, 100, 768)  embedding norm mean 0.000
+  xc : (6214, 100, 6)  price range [-1.0, 1.0]
+  y  : (6214, 7)   token id [2120, 2237]
+  scales: (6214,)   scale values [1.46675, 4.59201] mean=3.2
+  Predictions span: 2007-05-07 -> 2024-07-12  (N=6214)
+[2026-07-29 17:04:00,933]  INFO model_impl.data_loading.windowing: 
+[val]
+  xe : (359, 100)  token id [2167, 2211]
+  xn : (359, 100, 768)  embedding norm mean 0.000
+  xc : (359, 100, 6)  price range [-1.0, 1.0]
+  y  : (359, 7)   token id [2167, 2211]
+  scales: (359,)   scale values [4.18355, 4.76894] mean=4.4
+  Predictions span: 2024-07-19 -> 2025-07-12  (N=359)
+[2026-07-29 17:04:00,936]  INFO model_impl.data_loading.windowing: 
+[test]
+  xe : (359, 100)  token id [2168, 2215]
+  xn : (359, 100, 768)  embedding norm mean 0.000
+  xc : (359, 100, 6)  price range [-1.0, 1.0]
+  y  : (359, 7)   token id [2168, 2212]
+  scales: (359,)   scale values [4.70997, 6.17524] mean=5.3
+  Predictions span: 2025-07-19 -> 2026-07-17  (N=359)
+[2026-07-29 17:04:19,526]  INFO model_impl.scripts.training: ep=  0  train_ce=8.0379  val_ce=7.5221  lr=1.00e-05
+[2026-07-29 17:04:37,946]  INFO model_impl.scripts.training: ep=  1  train_ce=7.3075  val_ce=6.9337  lr=1.00e-05
+[2026-07-29 17:04:56,680]  INFO model_impl.scripts.training: ep=  2  train_ce=6.8244  val_ce=6.4945  lr=1.00e-05
+[2026-07-29 17:05:15,575]  INFO model_impl.scripts.training: ep=  3  train_ce=6.4342  val_ce=6.1189  lr=1.00e-05
+[2026-07-29 17:05:34,620]  INFO model_impl.scripts.training: ep=  4  train_ce=6.0866  val_ce=5.7766  lr=1.00e-05
+[2026-07-29 17:05:53,753]  INFO model_impl.scripts.training: ep=  5  train_ce=5.7621  val_ce=5.4630  lr=1.00e-05
+[2026-07-29 17:06:13,052]  INFO model_impl.scripts.training: ep=  6  train_ce=5.4609  val_ce=5.1704  lr=1.00e-05
+[2026-07-29 17:06:32,523]  INFO model_impl.scripts.training: ep=  7  train_ce=5.1855  val_ce=4.9152  lr=1.00e-05

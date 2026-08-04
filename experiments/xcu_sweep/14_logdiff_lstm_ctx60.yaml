@@ -1,0 +1,111 @@
+DATA:
+  TARGET:
+    ID: "XCU"
+    FEATURE: "close"
+
+  #COVARIATES:   # price-only baseline
+
+  GLOBAL_COVARIATES: [
+    "AA_open", "AA_high", "AA_low", "AA_close",
+    "BHP_open", "BHP_high", "BHP_low", "BHP_close",
+    "FCX_open", "FCX_high", "FCX_low", "FCX_close",
+    "MP_open", "MP_high", "MP_low", "MP_close",
+    "REMX_open", "REMX_high", "REMX_low", "REMX_close",
+    "RIO_open", "RIO_high", "RIO_low", "RIO_close",
+    "STOXX50E_open", "STOXX50E_high", "STOXX50E_low", "STOXX50E_close",
+    "BRENTOIL_open", "BRENTOIL_high", "BRENTOIL_low", "BRENTOIL_close",
+    "CL1_open", "CL1_high", "CL1_low", "CL1_close",
+    "NG_open", "NG_high", "NG_low", "NG_close",
+    "eur_usd", "eur_cny"
+  ]
+
+  NEWS_COL: "embedding"
+
+  SPLITS:
+    TEST_DAYS: 230
+    VAL_DAYS:  230
+
+  PRED_LEN: 7
+  CTX_LEN: 60
+
+  TOKEN_ALL: false
+  SHUFFLE_DATA: true
+  TYPE_OF_DIFF: "log_diff"  # no_diff | diff | log_diff
+
+
+SEED: 1
+
+
+MODEL:
+  COMP_ENC: "amazon/chronos-t5-large"
+  CROSS_CHRONOS:
+    configs:
+      EMB_DIM_NEWS: 768
+      D_MODEL: 1024
+      N_HEADS: 8
+      N_LAYERS_TXT: 3
+      D_FF: 1024
+      DROPOUT: 0.05
+      HEAD: "lstm"  # linear | mlp | lstm | transformer
+
+
+TRAINING:
+  EPOCHS: 300
+  LR: 0.00001
+  WEIGHT_DECAY: 0.000
+  GRAD_CLIP: null
+  BATCH_SIZE: 512
+  LABEL_SMOOTHING: 0.0
+
+
+EVALUATION:
+  WINDOWS: 30
+  MC_SAMPLES: 100
+
+  CENTRAL_INTERVAL:
+    ALPHA_50: 0.5
+    ALPHA_80: 0.2
+    ALPHA_90: 0.1
+
+  ECE_QUANTILE_GRID:
+    ECE_Q_START: 0.05
+    ECE_Q_STOP: 0.95
+    ECE_Q_STEPS: 19
+
+  FAITH:
+    FAITH_MC_SAMPLES: 100
+    FAITH_KS: [1, 2, 3, 5, 8, 10, 15, 20, 25, 30]
+    FAITH_TOPK: 5
+    FAITH_STABILITY_RUNS: 5
+    FAITH_PLACEBO_SHIFTS: [-3, -1, 1, 3]
+    FAITH_MASK_STRATEGY: "mean"
+    FAITH_RNG_SEED: 123
+
+SCHEDULER:
+  use: true
+  configs:
+    LR_COLD_START: 0.00001
+    LR_COLD_EPOCHS: 30
+    LR_DECREASE_FACTOR: 0.5
+    LR_METRIC: "val"
+    LR_PLATEAU_PATIENCE: 10
+
+
+EARLY_STOPPER:
+  use: true
+  configs:
+    EARLY_STOPPER_PATIENCE: 20
+
+
+TRACKING:
+  MLFLOW:
+    use: true
+    configs:
+      URI: "http://127.0.0.1:5000"
+      EXPIREMENT: "xcu_sweep_full_Covs"
+      RUN: "14_logdiff_lstm_ctx60"
+      LOG_MODEL: false
+  LOCAL:
+    use: false
+    configs:
+      dir: ""

@@ -1,0 +1,162 @@
+{
+  "seed": 1,
+  "data": {
+    "target": {
+      "id": "XCU",
+      "feature": "close"
+    },
+    "covariates": [
+      [
+        "XCU",
+        [
+          "open"
+        ]
+      ]
+    ],
+    "global_covariates": [
+      "XCU_Williams_R",
+      "XCU_Daily_Return",
+      "XCU_ROC",
+      "XCU_RSI",
+      "XCU_MACD",
+      "FCX_low",
+      "FCX_high",
+      "XCU_EMA_12",
+      "BHP_low",
+      "FCX_close",
+      "RIO_low",
+      "BHP_close",
+      "XCU_Movement",
+      "RIO_close",
+      "XCU_Stoch_D",
+      "AA_low",
+      "BHP_open",
+      "FCX_open",
+      "AA_high",
+      "RIO_open",
+      "AA_close",
+      "FCX_Williams_R",
+      "FCX_Movement",
+      "BHP_Stoch_K",
+      "RIO_Williams_R",
+      "FCX_MACD",
+      "FCX_ROC",
+      "FCX_EMA_12",
+      "REMX_close",
+      "BHP_MACD",
+      "REMX_low",
+      "REMX_high",
+      "RIO_EMA_12",
+      "BHP_ROC",
+      "FCX_RSI",
+      "BHP_EMA_12",
+      "RIO_ROC",
+      "RIO_RSI",
+      "BHP_Movement",
+      "FCX_Daily_Return",
+      "BHP_RSI",
+      "AA_open",
+      "AA_Williams_R",
+      "RIO_Movement",
+      "BHP_Daily_Return",
+      "AA_Movement",
+      "REMX_Stoch_K",
+      "BHP_Stoch_D",
+      "AA_EMA_12"
+    ],
+    "news_col": "embedding",
+    "splits": {
+      "test_days": 365,
+      "val_days": 365
+    },
+    "pred_len": 7,
+    "ctx_len": 100,
+    "token_all": false,
+    "shuffle_data": true,
+    "type_of_diff": "no_diff"
+  },
+  "model": {
+    "comp_enc": "amazon/chronos-t5-small",
+    "cross_chronos": {
+      "emb_dim_news": 768,
+      "d_model": 512,
+      "n_heads": 8,
+      "n_layers_txt": 3,
+      "d_ff": 1024,
+      "dropout": 0.2,
+      "head": "linear"
+    }
+  },
+  "training": {
+    "epochs": 200,
+    "lr": 1e-05,
+    "weight_decay": 0.0,
+    "grad_clip": null,
+    "batch_size": 512,
+    "label_smoothing": 0.0
+  },
+  "evaluation": {
+    "windows": 150,
+    "mc_samples": 200,
+    "central_interval": {
+      "alpha_50": 0.5,
+      "alpha_80": 0.2,
+      "alpha_90": 0.1
+    },
+    "ece_grid": {
+      "start": 0.05,
+      "stop": 0.95,
+      "steps": 19
+    },
+    "faith": {
+      "mc_samples": 100,
+      "ks": [
+        1,
+        2,
+        3,
+        5,
+        8,
+        10,
+        15,
+        20,
+        25,
+        30
+      ],
+      "topk": 5,
+      "stability_runs": 5,
+      "placebo_shifts": [
+        -3,
+        -1,
+        1,
+        3
+      ],
+      "mask_strategy": "mean",
+      "rng_seed": 123
+    }
+  },
+  "scheduler": {
+    "use": true,
+    "cold_start": 1e-05,
+    "cold_epochs": 30,
+    "decrease_factor": 0.5,
+    "metric": "val",
+    "patience": 7
+  },
+  "early_stopper": {
+    "use": true,
+    "patience": 10
+  },
+  "tracking": {
+    "mlflow": {
+      "use": true,
+      "uri": "http://127.0.0.1:5000",
+      "experiment": "chronos decoder",
+      "run_name": "linear__temp1_2__no_diff",
+      "log_model": false
+    },
+    "local": {
+      "use": true,
+      "dir": "res_with_news/linear__temp1_2__no_diff"
+    }
+  }
+}
