@@ -197,10 +197,10 @@ Things a reviewer would find, listed before they have to look:
 
 ## Contributors
 
-Primary author: **Giorgos Oikonomidis** — architecture, model implementation, evaluation
+Primary author: **Giorgos Oikonomidis** — architecture, data-creation pipeline , model implementation, evaluation
 suite, experimental design and analysis.
 
-With contributions from **Eugenia Skagkou** on the data-creation pipeline.
+With contributions from **Eugenia Skagkou** on the data-creation in the news fetching .
 
 Published with permission.
 
