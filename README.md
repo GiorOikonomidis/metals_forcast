@@ -41,7 +41,7 @@ vocabulary over a forecast horizon.
 flowchart LR
     P["Price series<br/>(OHLC)"] --> TOK["Chronos<br/>tokenizer"]
     TOK --> ENC["<b>Frozen</b> Chronos-T5<br/>encoder"]
-    N["Financial news<br/>(NYT / RSS)"] --> NLP["FinBERT sentiment<br/>+ MiniLM embeddings"]
+    N["Financial news<br/>(NYT / RSS)"] --> NLP["Financial-Bert"]
     NLP --> NP["Linear → TransformerEncoder"]
     C["Cross-asset covariates<br/>+ technical indicators"] --> CP["Linear → TransformerEncoder"]
 
